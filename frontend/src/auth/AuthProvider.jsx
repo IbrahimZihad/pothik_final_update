@@ -1,9 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { api, refreshSession, setAccessToken, readData } from '../lib/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,19 +36,25 @@ export function AuthProvider({ children }) {
   const login = useCallback(
     async (email, password) => {
       const data = await readData(api.post('/auth/login', { email, password }));
+      // Dashboard keys are shared across roles; drop the previous account's cache.
+      queryClient.clear();
       setAccessToken(data.accessToken);
       setUser(data.user);
       return data.user;
     },
-    []
+    [queryClient]
   );
 
-  const register = useCallback(async (payload) => {
-    const data = await readData(api.post('/auth/register', payload));
-    setAccessToken(data.accessToken);
-    setUser(data.user);
-    return data.user;
-  }, []);
+  const register = useCallback(
+    async (payload) => {
+      const data = await readData(api.post('/auth/register', payload));
+      queryClient.clear();
+      setAccessToken(data.accessToken);
+      setUser(data.user);
+      return data.user;
+    },
+    [queryClient]
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -54,9 +62,10 @@ export function AuthProvider({ children }) {
     } catch {
       /* the local session is cleared regardless */
     }
+    queryClient.clear();
     setAccessToken(null);
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
   const refreshUser = useCallback(async () => loadUser(), [loadUser]);
 

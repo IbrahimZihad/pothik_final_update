@@ -62,7 +62,7 @@ export default function ProviderDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Awaiting acceptance" value={bookings.awaitingYourAcceptance || 0} icon={ClipboardList} tone={bookings.awaitingYourAcceptance ? 'amber' : 'slate'} />
-        <StatCard label="Upcoming trips" value={bookings.upcoming?.length || 0} icon={CalendarCheck} />
+        <StatCard label="Upcoming trips" value={bookings.upcomingTotal ?? bookings.upcoming?.length ?? 0} icon={CalendarCheck} />
         <StatCard label="Earned (net)" value={formatCurrency(finance.earned)} icon={Wallet} tone="emerald" />
         <StatCard label="Available to withdraw" value={formatCurrency(finance.available)} icon={BarChart3} tone="secondary" />
       </div>

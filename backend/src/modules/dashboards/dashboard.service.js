@@ -138,7 +138,7 @@ async function providerDashboard(user) {
   const items = await models.BookingItem.findAll({ where: { provider_profile_id: profile.id }, attributes: ['booking_id', 'id'] });
   const bookingIds = [...new Set(items.map((item) => Number(item.booking_id)))];
 
-  const [statusGroups, upcoming, recentItems, earned, pendingAcceptance, requested, approved, paidPayouts, commissionGroups] = await Promise.all([
+  const [statusGroups, upcoming, upcomingCount, recentItems, earned, pendingAcceptance, requested, approved, paidPayouts, commissionGroups] = await Promise.all([
     bookingIds.length
       ? models.Booking.findAll({
           where: { id: { [Op.in]: bookingIds } },
@@ -149,7 +149,9 @@ async function providerDashboard(user) {
       : [],
     bookingIds.length
       ? models.Booking.findAll({
-          where: { id: { [Op.in]: bookingIds }, status: { [Op.in]: ['CONFIRMED', 'IN_PROGRESS'] }, start_date: { [Op.gte]: startDate } },
+          // AWAITING_PAYMENT means every provider accepted and only the traveller's
+          // payment is outstanding, so the trip is still upcoming for the provider.
+          where: { id: { [Op.in]: bookingIds }, status: { [Op.in]: ['AWAITING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'] }, start_date: { [Op.gte]: startDate } },
           include: [
             { model: models.BookingItem, as: 'items', where: { provider_profile_id: profile.id }, required: true },
             { model: models.User, as: 'customer', attributes: ['id', 'name', 'phone'] },
@@ -158,6 +160,12 @@ async function providerDashboard(user) {
           limit: 5,
         })
       : [],
+    bookingIds.length
+      ? models.Booking.count({
+          // The list above is capped at five; the stat card needs the real total.
+          where: { id: { [Op.in]: bookingIds }, status: { [Op.in]: ['AWAITING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'] }, start_date: { [Op.gte]: startDate } },
+        })
+      : 0,
     bookingIds.length
       ? models.Booking.findAll({
           where: { id: { [Op.in]: bookingIds } },
@@ -171,7 +179,14 @@ async function providerDashboard(user) {
       : [],
     paymentRepository.providerEarned(profile.id),
     bookingIds.length
-      ? models.BookingItem.count({ where: { provider_profile_id: profile.id, status: 'PENDING' } })
+      ? models.BookingItem.count({
+          // One card per booking, and only while the booking still waits on providers:
+          // stale PENDING items on cancelled/paid bookings must not inflate the count.
+          where: { provider_profile_id: profile.id, status: 'PENDING' },
+          include: [{ model: models.Booking, as: 'booking', attributes: [], where: { status: 'AWAITING_CONFIRMATION' }, required: true }],
+          distinct: true,
+          col: 'booking_id',
+        })
       : 0,
     paymentRepository.providerPayoutTotal(profile.id, ['REQUESTED']),
     paymentRepository.providerPayoutTotal(profile.id, ['APPROVED']),
@@ -221,6 +236,7 @@ async function providerDashboard(user) {
       byStatus: Object.fromEntries(statusGroups.map((row) => [row.status, Number(row.count)])),
       awaitingYourAcceptance: pendingAcceptance,
       upcoming: upcoming.map((row) => bookingService.serializeBookingSummary(row)),
+      upcomingTotal: Number(upcomingCount || 0),
       recent: recentItems.map((row) => bookingService.serializeBookingSummary(row)),
     },
     finance: {

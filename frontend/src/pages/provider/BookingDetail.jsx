@@ -58,7 +58,9 @@ export default function ProviderBookingDetail() {
 
   const payable = booking.items.reduce((sum, item) => sum + Number(item.providerPayable || 0), 0);
   const commission = booking.items.reduce((sum, item) => sum + Number(item.commissionAmount || 0), 0);
-  const canAccept = booking.status === 'AWAITING_CONFIRMATION';
+  // Accept/reject apply to this provider's own lines, not the whole booking: the
+  // booking stays AWAITING_CONFIRMATION while other providers decide.
+  const canAccept = booking.status === 'AWAITING_CONFIRMATION' && booking.items.some((item) => item.status === 'PENDING');
   const canStart = booking.status === 'CONFIRMED';
   const canComplete = booking.status === 'IN_PROGRESS';
 
@@ -104,6 +106,12 @@ export default function ProviderBookingDetail() {
       {canAccept && (
         <p className="mb-5 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Accept to confirm your lines and unlock payment for the traveller. Rejecting releases all held inventory for this booking.
+        </p>
+      )}
+
+      {booking.status === 'AWAITING_CONFIRMATION' && !canAccept && (
+        <p className="mb-5 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          Your lines are confirmed. The booking stays open until every other provider accepts, then payment unlocks for the traveller.
         </p>
       )}
 
