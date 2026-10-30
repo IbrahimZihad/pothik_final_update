@@ -412,6 +412,13 @@ patch('/admin/providers/{id}/documents/{documentId}', {
   write: true,
   notFound: true,
 });
+get('/admin/providers/{id}/documents/{documentId}/file', {
+  tags: ['Admin'],
+  summary: 'Stream a provider verification document',
+  params: ['IdParam', 'DocumentIdParam'],
+  notFound: true,
+  download: true,
+});
 
 get('/admin/bookings', {
   tags: ['Admin'],
