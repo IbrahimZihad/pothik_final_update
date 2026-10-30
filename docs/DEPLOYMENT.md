@@ -2,7 +2,7 @@
 
 POTHIK ships a Docker Compose topology: MySQL 8, Redis, two stateless API replicas, a dedicated BullMQ worker, the built React SPA and an edge Nginx.
 
-> **Verification status:** the compose file, Dockerfiles and Nginx config are provided but were **not executed** in this environment (no Docker CLI). Treat them as a reviewed starting point, not a tested deployment. Validate them in staging before production. See [PROJECT_AUDIT.md](PROJECT_AUDIT.md).
+> **Verification status:** the Compose stack was built and run locally (Docker Engine 29.9.2, Compose v5.6.1) on 2026-10-31: two API replicas, worker, MySQL 8, Redis, Nginx and the SPA all reached `healthy`, with migrations and seeding executed against MySQL and the published images `ibrahim12zihad/pothik-api:1.0.2` / `pothik-web:1.0.2`. It has **not** been exercised on a public host, and SSLCommerz/bKash have not been run against their live gateways. Validate on staging before production. See [PROJECT_AUDIT.md](PROJECT_AUDIT.md).
 
 ## Topology
 

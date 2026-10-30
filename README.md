@@ -39,6 +39,62 @@ The admin account is created from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `backend/.
 
 Demo content covers all nine destinations, each with at least one published hotel, rooms and 120 days of availability, so every trip-builder step has inventory. Seeders are recorded per file: if your database was seeded before a seeder changed, re-run it by deleting that file's row from `sequelize_seed_meta` (or rebuild the demo database) before `npm run db:seed`.
 
+## Run with the published Docker images
+
+The full stack (MySQL, Redis, migrations, two API replicas, BullMQ worker, Nginx, SPA) is published to Docker Hub and can be run without the source build toolchain:
+
+| Image | Visibility |
+| --- | --- |
+| `ibrahim12zihad/pothik-api:1.0.2` (`latest` = 1.0.2) | Private — requires Docker Hub access |
+| `ibrahim12zihad/pothik-web:1.0.2` (`latest` = 1.0.2) | Public |
+
+`pothik-api` is private, so you need permission from the repository owner (`ibrahim12zihad` on Docker Hub) before you can pull it. Without access, build from source instead with the tracked compose file: `docker compose -f docker-compose.yml up -d --build`.
+
+Prerequisites: Docker Engine 24+ with the Compose v2 plugin, ~2 GB free RAM and port 80 free. The images are `linux/amd64`; on ARM hosts set `DOCKER_DEFAULT_PLATFORM=linux/amd64` (emulated, slower).
+
+```bash
+git clone <repository-url> pothik && cd pothik/deployment
+cp .env.example .env
+
+# Edit .env before starting. Minimum for a local evaluation:
+#   NODE_ENV=development
+#   PUBLIC_URL=http://localhost
+#   HTTP_PORT=80
+#   MYSQL_ROOT_PASSWORD=<random>
+#   MYSQL_PASSWORD=<random>
+#   JWT_ACCESS_SECRET=<openssl rand -hex 32>
+#   JWT_REFRESH_SECRET=<a different openssl rand -hex 32>
+#   PAYMENT_CALLBACK_SECRET=<random>
+#   PAYMENT_GATEWAY=demo
+#   SEED_DEMO_PASSWORD=<password for the demo accounts>
+#   ADMIN_EMAIL=admin@example.com
+#   ADMIN_PASSWORD=<password for the first administrator>
+
+docker login                      # only needed for the private pothik-api image
+docker compose --env-file .env -f docker-compose.yml -f docker-compose.hub.yml pull
+docker compose --env-file .env -f docker-compose.yml -f docker-compose.hub.yml up -d --no-build
+
+# Optional demo data (destinations, packages, hotels/rooms with availability,
+# providers, sample bookings and reviews). Run once, on a fresh database.
+docker compose --env-file .env -f docker-compose.yml -f docker-compose.hub.yml --profile seed run --rm seed
+```
+
+Open `http://localhost`. The `migrate` service runs `node src/database/cli.js migrate` on every start before the API containers boot, so the schema is created automatically. Verify with:
+
+```bash
+docker compose --env-file .env -f docker-compose.yml -f docker-compose.hub.yml ps
+curl -fsS http://localhost/api/v1/health
+```
+
+Sign in with the administrator from `ADMIN_EMAIL`/`ADMIN_PASSWORD` (created by the seeder), or the demo travellers from the table above using `SEED_DEMO_PASSWORD`.
+
+Notes before using it outside a demo machine:
+
+- `PUBLIC_URL` must be the exact public origin. The published `pothik-web` image was built with `http://localhost` baked into canonical/OG URLs and API base paths; for another origin rebuild it from source with `PUBLIC_URL=https://your-domain.example` (`docker compose --env-file .env -f docker-compose.yml build frontend`).
+- Keep `NODE_ENV=development` for plain-HTTP evaluation. With `NODE_ENV=production` the refresh cookie is `Secure` (sign-in needs HTTPS) and the `demo` gateway is refused at boot; use `sslcommerz` or `bkash` credentials, or put a TLS proxy in front.
+- To change release, edit the tags in `deployment/docker-compose.hub.yml`, then re-run `pull` and `up -d --no-build`.
+- Data lives in the named volumes `mysql_data`, `redis_data` and `uploads`. `down` keeps them; `down -v` deletes all database, job and upload state.
+
 ## Documentation
 
 | Document | Contents |

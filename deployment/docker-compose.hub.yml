@@ -1,0 +1,22 @@
+# Run the published Docker Hub images instead of building from source.
+#
+#   docker compose --env-file .env -f docker-compose.yml -f docker-compose.hub.yml pull
+#   docker compose --env-file .env -f docker-compose.yml -f docker-compose.hub.yml up -d --no-build
+#
+# `pothik-api` is a private repository: run `docker login` first and use an
+# account the owner has granted access to. `pothik-web` is public.
+# Bump the tags here when a new release is published.
+
+services:
+  api-1:
+    image: ibrahim12zihad/pothik-api:1.0.2
+  api-2:
+    image: ibrahim12zihad/pothik-api:1.0.2
+  worker:
+    image: ibrahim12zihad/pothik-api:1.0.2
+  migrate:
+    image: ibrahim12zihad/pothik-api:1.0.2
+  seed:
+    image: ibrahim12zihad/pothik-api:1.0.2
+  frontend:
+    image: ibrahim12zihad/pothik-web:1.0.2
