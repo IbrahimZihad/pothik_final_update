@@ -1,5 +1,7 @@
 # POTHIK — Online Travel Agency for Bangladesh
 
+![POTHIK — Bangladesh travel, planned properly](frontend/public/og.png)
+
 POTHIK is a full-stack OTA that lets travellers plan a trip across Bangladesh — hotel rooms, transport, tour guides and curated packages — price it on the server, pay in BDT and manage the booking from one account. Hotels, transport operators and guides get their own dashboard for inventory, reservations and finance. Administrators approve providers, moderate content and move money.
 
 | Area | Stack |
