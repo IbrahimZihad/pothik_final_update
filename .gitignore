@@ -7,6 +7,8 @@ coverage/
 !.env.example
 *.log
 logs/
+tmp/
+backend/tmp/
 uploads/
 backend/uploads/
 frontend/.vite/

@@ -96,7 +96,7 @@ async function notifyPaymentReceived(booking, payment) {
   await notifyCustomer(booking, {
     type: 'PAYMENT_RECEIVED',
     title: `Payment received for ${booking.reference}`,
-    body: `We received BDT ${Number(payment.amount).toFixed(2)}. ${booking.status === 'CONFIRMED' ? 'Your booking is confirmed.' : 'Your trip is ready.'}`,
+    body: `We received BDT ${Number(payment.amount).toLocaleString('en-US', { maximumFractionDigits: 2 })}. ${booking.status === 'CONFIRMED' ? 'Your booking is confirmed.' : 'Your trip is ready.'}`,
   });
   if (booking.status === 'CONFIRMED') {
     await notifyProviders(booking, {

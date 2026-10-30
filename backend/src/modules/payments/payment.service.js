@@ -12,9 +12,11 @@ const logger = require('../../config/logger');
 const { NotFoundError, ForbiddenError, BusinessRuleError, ConflictError } = require('../../shared/errors');
 const { money, toAmount, max } = require('../../shared/utils/money');
 const { getPagination, buildMeta } = require('../../shared/utils/pagination');
+const { recordAudit } = require('../../shared/utils/audit');
 
 const PAYABLE_BOOKING_STATUSES = ['AWAITING_PAYMENT', 'CONFIRMED'];
 const REFUND_REQUESTABLE_STATUSES = ['CANCELLED', 'REFUND_PENDING', 'COMPLETED'];
+const PAYOUT_ACTION_LABEL = { approve: 'approved', reject: 'rejected', paid: 'paid' };
 
 // ---------------------------------------------------------------- serializers
 
@@ -440,18 +442,26 @@ async function listAllRefunds(query) {
   return { items: rows.map(serializeRefund), meta: buildMeta({ page, limit, total: count }) };
 }
 
-async function approveRefund(admin, id) {
+async function approveRefund(admin, id, context = {}) {
   const refund = await repository.findRefund(id);
   if (!refund) throw new NotFoundError('Refund');
   if (refund.status !== 'REQUESTED') {
     throw new BusinessRuleError(`Refund is already ${refund.status.toLowerCase()}`, 'INVALID_REFUND_STATUS');
   }
   await refund.update({ status: 'APPROVED', processed_by_user_id: admin.id, processed_at: new Date() });
+  await recordAudit({
+    actorUserId: admin.id,
+    action: 'refund.approved',
+    entityType: 'refund',
+    entityId: refund.id,
+    metadata: { bookingId: refund.booking_id, amount: toAmount(refund.amount) },
+    ...context,
+  });
   await notifications.notifyRefundUpdate(refund, 'APPROVED');
   return serializeRefund(refund);
 }
 
-async function rejectRefund(admin, id, { notes } = {}) {
+async function rejectRefund(admin, id, { notes } = {}, context = {}) {
   const refund = await repository.findRefund(id);
   if (!refund) throw new NotFoundError('Refund');
   if (!['REQUESTED', 'APPROVED'].includes(refund.status)) {
@@ -477,10 +487,18 @@ async function rejectRefund(admin, id, { notes } = {}) {
   });
 
   await notifications.notifyRefundUpdate(refund, 'REJECTED');
+  await recordAudit({
+    actorUserId: admin.id,
+    action: 'refund.rejected',
+    entityType: 'refund',
+    entityId: refund.id,
+    metadata: { bookingId: refund.booking_id, amount: toAmount(refund.amount), notes: notes || null },
+    ...context,
+  });
   return serializeRefund(refund);
 }
 
-async function processRefund(admin, id, { providerRefundId, notes } = {}) {
+async function processRefund(admin, id, { providerRefundId, notes } = {}, context = {}) {
   const refund = await repository.findRefund(id);
   if (!refund) throw new NotFoundError('Refund');
   if (refund.status !== 'APPROVED') {
@@ -526,6 +544,14 @@ async function processRefund(admin, id, { providerRefundId, notes } = {}) {
   });
 
   await notifications.notifyRefundUpdate(refund, 'PROCESSED');
+  await recordAudit({
+    actorUserId: admin.id,
+    action: 'refund.processed',
+    entityType: 'refund',
+    entityId: refund.id,
+    metadata: { bookingId: refund.booking_id, amount: toAmount(refund.amount), providerRefundId: providerRefundId || null },
+    ...context,
+  });
   return serializeRefund(await repository.findRefund(refund.id));
 }
 
@@ -641,7 +667,7 @@ async function commissionSummary() {
   return { byStatus: totals, totalEarned: toAmount(totals.filter((row) => row.status === 'EARNED' || row.status === 'PAID').reduce((sum, row) => sum + row.total, 0)) };
 }
 
-async function transitionPayout(admin, id, action, { reference, notes } = {}) {
+async function transitionPayout(admin, id, action, { reference, notes } = {}, context = {}) {
   const payout = await repository.findPayout(id);
   if (!payout) throw new NotFoundError('Payout');
 
@@ -675,6 +701,20 @@ async function transitionPayout(admin, id, action, { reference, notes } = {}) {
   } catch (err) {
     logger.error({ err: err.message, payoutId: payout.id }, 'payout notification failed');
   }
+
+  await recordAudit({
+    actorUserId: admin.id,
+    action: `payout.${PAYOUT_ACTION_LABEL[action]}`,
+    entityType: 'provider_payout',
+    entityId: payout.id,
+    metadata: {
+      providerProfileId: payout.provider_profile_id,
+      amount: toAmount(payout.amount),
+      reference: reference || null,
+      notes: notes || null,
+    },
+    ...context,
+  });
 
   return serializePayout(await repository.findPayout(payout.id));
 }

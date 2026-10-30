@@ -1,7 +1,7 @@
 'use strict';
 
 const { models } = require('../../models');
-const { dateOffset, ensureUser, ensureProviderProfile } = require('../seedUtils');
+const { dateOffset, ensureUser, ensureProviderProfile, ensureDemoDocument } = require('../seedUtils');
 
 const HOTEL = {
   name: 'Sea Crown Hotel & Resort',
@@ -278,6 +278,7 @@ module.exports = {
       address: 'Mongla, Bagerhat',
       status: 'PENDING',
     });
+    ensureDemoDocument();
     await models.ProviderDocument.findOrCreate({
       where: { provider_profile_id: pendingProfile.id, type: 'TRADE_LICENSE' },
       defaults: {

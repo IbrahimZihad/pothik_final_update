@@ -167,6 +167,43 @@ module.exports = {
 
     const contact = { name: 'Ayesha Rahman', phone: '01611112222', email: 'customer@pothik.test' };
 
+    // 0) completed hotel stay - cleared provider earnings for the payout workflow
+    if (deluxeRoom && hotelProvider) {
+      const staySubtotal = Number(deluxeRoom.base_price) * 2;
+      await createSeedBooking({
+        reference: 'PTK-SEED-1000',
+        customerId: customer.id,
+        type: 'HOTEL',
+        status: 'COMPLETED',
+        start: day(-40),
+        end: day(-38),
+        adults: 2,
+        children: 0,
+        contact,
+        items: [
+          {
+            item_type: 'HOTEL_ROOM',
+            ref_id: deluxeRoom.id,
+            provider_profile_id: hotelProvider.id,
+            title: `${hotel.name} - ${deluxeRoom.name} (2 nights)`,
+            quantity: 1,
+            unit_price: staySubtotal,
+            total_price: staySubtotal,
+            commission_rate: 12,
+            commission_amount: staySubtotal * 0.12,
+            meta: { nights: 2, rooms: 1 },
+          },
+        ],
+        payments: [{ idempotency_key: 'seed-pay-1000', amount: staySubtotal, method: 'card' }],
+        history: [
+          ['PENDING', 'AWAITING_PAYMENT', 'Quotation generated'],
+          ['AWAITING_PAYMENT', 'CONFIRMED', 'Payment verified'],
+          ['CONFIRMED', 'IN_PROGRESS', 'Stay started'],
+          ['IN_PROGRESS', 'COMPLETED', 'Stay completed'],
+        ],
+      });
+    }
+
     // 1) completed package trip with review
     const completed = await createSeedBooking({
       reference: 'PTK-SEED-1001',
@@ -399,7 +436,7 @@ module.exports = {
 
     if (cancelled) {
       const payment = await models.Payment.findOne({ where: { booking_id: cancelled.id } });
-      await models.Refund.findOrCreate({
+      const [refund, refundCreated] = await models.Refund.findOrCreate({
         where: { booking_id: cancelled.id, amount: '8000.00' },
         defaults: {
           booking_id: cancelled.id,
@@ -410,7 +447,13 @@ module.exports = {
           requested_by_user_id: customer2.id,
         },
       });
-      await models.Booking.update({ status: 'REFUND_PENDING' }, { where: { id: cancelled.id } });
+      // Keep the booking status in step with the refund row when the demo
+      // database already contains a decided refund from an earlier run.
+      const bookingStatusByRefund = { PROCESSED: 'REFUNDED', REJECTED: 'CANCELLED', REQUESTED: 'REFUND_PENDING', APPROVED: 'REFUND_PENDING' };
+      const targetStatus = bookingStatusByRefund[refundCreated ? 'REQUESTED' : refund.status];
+      if (targetStatus && cancelled.status !== targetStatus) {
+        await models.Booking.update({ status: targetStatus }, { where: { id: cancelled.id } });
+      }
     }
 
     // 5) reserved inventory for the confirmed trip so the demo cannot double-book

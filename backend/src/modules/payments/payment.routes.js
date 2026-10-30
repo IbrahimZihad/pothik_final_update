@@ -158,7 +158,7 @@ adminRouter.post(
   authorize(PERMISSIONS.REFUNDS_APPROVE),
   validate({ params: validators.idParam, body: validators.refundDecisionBody }),
   asyncHandler(async (req, res) =>
-    success(res, { message: 'Refund approved', data: await service.approveRefund(req.user, req.params.id) })
+    success(res, { message: 'Refund approved', data: await service.approveRefund(req.user, req.params.id, { ip: req.ip, requestId: req.id }) })
   )
 );
 
@@ -167,7 +167,7 @@ adminRouter.post(
   authorize(PERMISSIONS.REFUNDS_APPROVE),
   validate({ params: validators.idParam, body: validators.refundDecisionBody }),
   asyncHandler(async (req, res) =>
-    success(res, { message: 'Refund rejected', data: await service.rejectRefund(req.user, req.params.id, req.body) })
+    success(res, { message: 'Refund rejected', data: await service.rejectRefund(req.user, req.params.id, req.body, { ip: req.ip, requestId: req.id }) })
   )
 );
 
@@ -176,7 +176,7 @@ adminRouter.post(
   authorize(PERMISSIONS.REFUNDS_APPROVE),
   validate({ params: validators.idParam, body: validators.refundDecisionBody }),
   asyncHandler(async (req, res) =>
-    success(res, { message: 'Refund processed', data: await service.processRefund(req.user, req.params.id, req.body) })
+    success(res, { message: 'Refund processed', data: await service.processRefund(req.user, req.params.id, req.body, { ip: req.ip, requestId: req.id }) })
   )
 );
 
@@ -210,7 +210,7 @@ for (const action of ['approve', 'reject', 'paid']) {
     asyncHandler(async (req, res) =>
       success(res, {
         message: `Payout ${action === 'paid' ? 'marked as paid' : `${action}d`}`,
-        data: await service.transitionPayout(req.user, req.params.id, action, req.body),
+        data: await service.transitionPayout(req.user, req.params.id, action, req.body, { ip: req.ip, requestId: req.id }),
       })
     )
   );

@@ -7,6 +7,7 @@ const { getPagination, buildMeta } = require('../../shared/utils/pagination');
 const { toAmount } = require('../../shared/utils/money');
 const { uniqueSlug } = require('../../shared/utils/slugify');
 const { invalidateUserContext } = require('../../shared/services/userContext.service');
+const { recordAudit: writeAudit } = require('../../shared/utils/audit');
 const bookingService = require('../bookings/booking.service');
 const bookingRepository = require('../bookings/booking.repository');
 const reviewService = require('../reviews/review.service');
@@ -15,20 +16,16 @@ const logger = require('../../config/logger');
 
 // -------------------------------------------------------------------- audit
 
-async function recordAudit(req, action, entityType, entityId, metadata = null) {
-  try {
-    await models.AuditLog.create({
-      actor_user_id: req.user?.id || null,
-      action,
-      entity_type: entityType,
-      entity_id: entityId === undefined || entityId === null ? null : String(entityId),
-      metadata,
-      ip: req.ip || null,
-      request_id: req.id ? String(req.id) : null,
-    });
-  } catch (err) {
-    logger.error({ err: err.message, action }, 'audit log write failed');
-  }
+function recordAudit(req, action, entityType, entityId, metadata = null) {
+  return writeAudit({
+    actorUserId: req.user?.id || null,
+    action,
+    entityType,
+    entityId,
+    metadata,
+    ip: req.ip || null,
+    requestId: req.id,
+  });
 }
 
 // -------------------------------------------------------------------- users

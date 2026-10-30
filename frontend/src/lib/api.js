@@ -13,6 +13,13 @@ export function getAccessToken() {
   return accessToken;
 }
 
+export function assetUrl(path) {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  const origin = API_BASE.replace(/\/api\/v1\/?$/, '');
+  return `${origin}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export class ApiError extends Error {
   constructor(message, { status, code, details, errors } = {}) {
     super(message);

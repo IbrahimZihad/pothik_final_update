@@ -24,8 +24,8 @@ describe('reviews and verified bookings', () => {
     transport = await login('transport@pothik.test', 'PothikDemo123');
     admin = await login('admin@pothik.test', process.env.ADMIN_PASSWORD);
 
-    const user = await models.User.findOne({ where: { email: 'customer@pothik.test' } });
-    const seededCompleted = await models.Booking.findOne({ where: { customer_user_id: user.id, status: 'COMPLETED' } });
+    // PTK-SEED-1001 is the seeded completed package trip that carries reviews.
+    const seededCompleted = await models.Booking.findOne({ where: { reference: 'PTK-SEED-1001' } });
     completedBookingId = seededCompleted.id;
 
     const checkIn = addDays(today(), 50);

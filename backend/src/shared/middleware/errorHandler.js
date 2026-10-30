@@ -2,6 +2,7 @@
 
 const { ForeignKeyConstraintError, UniqueConstraintError, ValidationError: SequelizeValidationError } = require('sequelize');
 const { ZodError } = require('zod');
+const multer = require('multer');
 const logger = require('../../config/logger');
 const { failure } = require('../responses');
 const { AppError } = require('../errors');
@@ -9,6 +10,16 @@ const { AppError } = require('../errors');
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   if (res.headersSent) return;
+
+  if (err instanceof multer.MulterError) {
+    const tooLarge = err.code === 'LIMIT_FILE_SIZE';
+    return failure(res, {
+      status: tooLarge ? 413 : 400,
+      message: tooLarge ? 'The uploaded file is too large' : 'The upload could not be processed',
+      code: tooLarge ? 'FILE_TOO_LARGE' : 'UPLOAD_ERROR',
+      errors: [{ field: err.field || 'file', message: err.message }],
+    });
+  }
 
   if (err instanceof ZodError) {
     return failure(res, {

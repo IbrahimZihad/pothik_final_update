@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileCheck2, Search, ShieldCheck } from 'lucide-react';
-import { api, readData, errorMessage } from '../../lib/api';
+import { api, assetUrl, readData, errorMessage } from '../../lib/api';
 import DashHead from '../../components/dashboard/DashHead';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -173,7 +173,7 @@ export default function AdminProviders() {
         footer={
           profile?.status === 'PENDING' ? (
             <>
-              <Button variant="ghost" onClick={() => openDecision('reject')}>Reject</Button>
+              <Button variant="ghost" onClick={() => openDecision('reject')}>Reject provider</Button>
               <Button onClick={() => openDecision('approve')}>Approve provider</Button>
             </>
           ) : profile?.status === 'APPROVED' ? (
@@ -246,7 +246,7 @@ export default function AdminProviders() {
                   {profile.documents.map((document) => (
                     <li key={document.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 px-3 py-2.5">
                       <div>
-                        <a href={document.fileUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-slate-800 hover:text-primary-700">
+                        <a href={assetUrl(document.fileUrl)} target="_blank" rel="noreferrer" className="text-sm font-medium text-slate-800 hover:text-primary-700">
                           {document.type.replaceAll('_', ' ').toLowerCase()}
                         </a>
                         <p className="text-[11px] text-slate-400">{document.notes || 'No notes'}</p>
@@ -259,7 +259,7 @@ export default function AdminProviders() {
                           loading={reviewDocument.isPending}
                           onClick={() => reviewDocument.mutate({ documentId: document.id, status: 'VERIFIED' })}
                         >
-                          Verify
+                          Verify document
                         </Button>
                         <Button
                           size="sm"
@@ -267,7 +267,7 @@ export default function AdminProviders() {
                           className="text-rose-600 hover:bg-rose-50"
                           onClick={() => reviewDocument.mutate({ documentId: document.id, status: 'REJECTED' })}
                         >
-                          Reject
+                          Reject document
                         </Button>
                       </div>
                     </li>

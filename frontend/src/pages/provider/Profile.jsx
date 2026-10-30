@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Building2, FileCheck2, FileUp, ShieldCheck } from 'lucide-react';
-import { api, readData, errorMessage } from '../../lib/api';
+import { api, assetUrl, readData, errorMessage } from '../../lib/api';
 import DashHead from '../../components/dashboard/DashHead';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -154,7 +154,7 @@ export default function ProviderProfile() {
               {data.documents?.length ? (
                 data.documents.map((document) => (
                   <li key={document.id} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-                    <a href={document.fileUrl} target="_blank" rel="noreferrer" className="truncate font-medium text-slate-700 hover:text-primary-700">
+                    <a href={assetUrl(document.fileUrl)} target="_blank" rel="noreferrer" className="truncate font-medium text-slate-700 hover:text-primary-700">
                       {document.type.replaceAll('_', ' ').toLowerCase()}
                     </a>
                     <StatusBadge status={document.status} />
