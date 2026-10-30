@@ -10,6 +10,8 @@ const bookings = require('../modules/bookings/booking.routes');
 const tripRoutes = require('../modules/trips/trip.routes');
 const payments = require('../modules/payments/payment.routes');
 const notifications = require('../modules/notifications/notification.routes');
+const adminRoutes = require('../modules/admin/admin.routes');
+const dashboards = require('../modules/dashboards/dashboard.routes');
 
 const router = express.Router();
 
@@ -23,10 +25,13 @@ router.use('/notifications', notifications.router);
 router.use('/messages', notifications.messageRouter);
 router.use('/admin', catalog.adminRouter);
 router.use('/admin', payments.adminRouter);
+router.use('/admin', adminRoutes);
 router.use('/', catalog.publicRouter);
 router.use('/', suppliers.publicRouter);
+router.use('/', dashboards.customerRouter);
 router.use('/provider/bookings', bookings.providerRouter);
 router.use('/provider', suppliers.providerRouter);
 router.use('/provider', payments.providerRouter);
+router.use('/provider', dashboards.providerRouter);
 
 module.exports = router;

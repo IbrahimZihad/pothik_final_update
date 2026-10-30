@@ -102,6 +102,8 @@ const blogBody = z.object({
 
 const blogUpdateBody = blogBody.partial();
 
+const adminListQuery = paginationQuery.extend({ status: z.string().trim().max(40).optional() });
+
 const auditListQuery = paginationQuery.extend({
   action: z.string().trim().max(80).optional(),
   entityType: z.string().trim().max(60).optional(),
@@ -126,5 +128,6 @@ module.exports = {
   reviewDecisionBody,
   blogBody,
   blogUpdateBody,
+  adminListQuery,
   auditListQuery,
 };
