@@ -3,17 +3,17 @@
 const express = require('express');
 const { validate } = require('../../shared/middleware/validate');
 const { authenticate } = require('../../shared/middleware/authenticate');
-const { authorize } = require('../../shared/middleware/authorize');
+const { authorize, requireRoles } = require('../../shared/middleware/authorize');
 const { writeLimiter } = require('../../shared/middleware/rateLimit');
 const { asyncHandler } = require('../../shared/utils/asyncHandler');
 const { success, created } = require('../../shared/responses');
-const { PERMISSIONS } = require('../../shared/constants/roles');
+const { PERMISSIONS, ROLES } = require('../../shared/constants/roles');
 const validators = require('./admin.validators');
 const service = require('./admin.service');
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(authenticate, requireRoles(ROLES.ADMIN));
 
 // ---------------------------------------------------------------- dashboard
 router.get(

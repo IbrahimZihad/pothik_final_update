@@ -49,6 +49,12 @@
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 30000,
+    "coverageThreshold": {
+      "global": {
+        "lines": 80,
+        "functions": 80
+      }
+    },
     "collectCoverageFrom": [
       "src/modules/**/*.js",
       "src/shared/**/*.js",

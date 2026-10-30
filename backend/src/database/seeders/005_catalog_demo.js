@@ -15,7 +15,7 @@ const DESTINATIONS = [
       "Cox's Bazar stretches over 120 kilometres of unbroken sandy beach along the Bay of Bengal. " +
       'It is the heart of Bangladeshi seaside tourism: calm mornings, fishing boats, dried-fish villages, ' +
       'and a promenade full of seafood restaurants. Nearby Himchari and Inani offer quieter coves and hills.',
-    cover_image: '/images/destinations/coxs-bazar.jpg',
+    cover_image: '/images/destinations/coxs-bazar.svg',
     best_season: 'November - March',
     estimated_duration_hours: 48,
     entry_fee: 0,
@@ -37,7 +37,7 @@ const DESTINATIONS = [
     description:
       'Sajek sits roughly 1,800 feet above sea level, surrounded by the Lusai hills. Tourists come for ' +
       'sunrise over a sea of clouds, tribal village walks, and the winding jeep road from Khagrachhari.',
-    cover_image: '/images/destinations/sajek.jpg',
+    cover_image: '/images/destinations/sajek.svg',
     best_season: 'June - October (clouds), November - February (clear skies)',
     estimated_duration_hours: 36,
     entry_fee: 50,
@@ -58,7 +58,7 @@ const DESTINATIONS = [
     description:
       'Bandarban is the roof of Bangladesh. Nilgiri, Boga Lake, Nafakhum waterfall and the Sangu river ' +
       'draw travellers who want trekking, cloud views and indigenous culture rather than beach resorts.',
-    cover_image: '/images/destinations/bandarban.jpg',
+    cover_image: '/images/destinations/bandarban.svg',
     best_season: 'November - March',
     estimated_duration_hours: 60,
     entry_fee: 0,
@@ -80,7 +80,7 @@ const DESTINATIONS = [
     description:
       'Rangamati is built around Kaptai Lake. Boat rides pass submerged valleys and floating markets, ' +
       'while the Rajban Bihar monastery and tribal textile shops anchor the town centre.',
-    cover_image: '/images/destinations/rangamati.jpg',
+    cover_image: '/images/destinations/rangamati.svg',
     best_season: 'October - March',
     estimated_duration_hours: 30,
     entry_fee: 0,
@@ -102,7 +102,7 @@ const DESTINATIONS = [
     description:
       'Sylhet pairs green tea gardens with spiritual heritage. Day trips reach Ratargul swamp forest, ' +
       'Bisnakandi’s stone streams, Jaflong and the shrine of Hazrat Shahjalal.',
-    cover_image: '/images/destinations/sylhet.jpg',
+    cover_image: '/images/destinations/sylhet.svg',
     best_season: 'July - October (water), November - February (tea gardens)',
     estimated_duration_hours: 42,
     entry_fee: 0,
@@ -124,7 +124,7 @@ const DESTINATIONS = [
     description:
       'A UNESCO World Heritage site, the Sundarbans is a labyrinth of tidal rivers and mangrove islands. ' +
       'Cruises from Khulna and Mongla visit watchtowers, deer-filled meadows and fishing villages.',
-    cover_image: '/images/destinations/sundarbans.jpg',
+    cover_image: '/images/destinations/sundarbans.svg',
     best_season: 'November - February',
     estimated_duration_hours: 48,
     entry_fee: 0,
@@ -145,7 +145,7 @@ const DESTINATIONS = [
     description:
       'A small coral island south of Teknaf, Saint Martin’s is reached by a 2-3 hour boat ride. ' +
       'Clear water, coral reefs and a sleepy village make it the classic island escape.',
-    cover_image: '/images/destinations/saint-martin.jpg',
+    cover_image: '/images/destinations/saint-martin.svg',
     best_season: 'November - March',
     estimated_duration_hours: 30,
     entry_fee: 0,
@@ -166,7 +166,7 @@ const DESTINATIONS = [
     description:
       'Kuakata faces south with water on three sides, so both sunrise and sunset can be seen from the ' +
       'same shoreline. Rakhine communities, fishing harbours and the Gangamati mangrove forest surround it.',
-    cover_image: '/images/destinations/kuakata.jpg',
+    cover_image: '/images/destinations/kuakata.svg',
     best_season: 'November - March',
     estimated_duration_hours: 30,
     entry_fee: 0,
@@ -187,7 +187,7 @@ const DESTINATIONS = [
     description:
       'Sreemangal is the tea capital of Bangladesh. Lawachara National Park protects hoolock gibbons, ' +
       'and the Nilkantha tea cabin serves the famous seven-layer tea.',
-    cover_image: '/images/destinations/sreemangal.jpg',
+    cover_image: '/images/destinations/sreemangal.svg',
     best_season: 'May - October (green), November - February (comfortable)',
     estimated_duration_hours: 30,
     entry_fee: 0,
@@ -210,7 +210,7 @@ const PACKAGES = [
     description:
       'A relaxed 3-day escape covering Laboni, Himchari and Inani beaches with a beachfront hotel, ' +
       'air-conditioned transport from Dhaka and a local guide for the Himchari trail.',
-    cover_image: '/images/destinations/coxs-bazar.jpg',
+    cover_image: '/images/destinations/coxs-bazar.svg',
     duration_days: 3,
     nights: 2,
     base_price: 12500,
@@ -233,7 +233,7 @@ const PACKAGES = [
     description:
       'A four-day hill circuit combining Sajek Valley and Bandarban with jeep transfers, hilltop resorts ' +
       'and guided village visits.',
-    cover_image: '/images/destinations/sajek.jpg',
+    cover_image: '/images/destinations/sajek.svg',
     duration_days: 4,
     nights: 3,
     base_price: 16800,
@@ -257,7 +257,7 @@ const PACKAGES = [
     description:
       'A guided two-day cruise from Khulna into the Sundarbans, visiting Kotka and Karamjal with ' +
       'forest department guides and all meals on board.',
-    cover_image: '/images/destinations/sundarbans.jpg',
+    cover_image: '/images/destinations/sundarbans.svg',
     duration_days: 2,
     nights: 1,
     base_price: 9800,
@@ -279,7 +279,7 @@ const PACKAGES = [
     description:
       'A three-day green escape covering Ratargul swamp forest, Bisnakandi, Lawachara rainforest and ' +
       'the tea estates of Sreemangal.',
-    cover_image: '/images/destinations/sreemangal.jpg',
+    cover_image: '/images/destinations/sreemangal.svg',
     duration_days: 3,
     nights: 2,
     base_price: 11200,
@@ -307,7 +307,7 @@ const BLOGS = [
       'Expect higher hotel rates around Eid and New Year. Monsoon (June to September) is quiet and cheap, ' +
       'but swimming is often unsafe. Ramadan can be a good compromise: fewer crowds, open beaches, ' +
       'and iftar seafood that is worth planning the whole day around.',
-    cover_image: '/images/destinations/coxs-bazar.jpg',
+    cover_image: '/images/destinations/coxs-bazar.svg',
     author_name: 'POTHIK Editorial',
   },
   {
@@ -319,7 +319,7 @@ const BLOGS = [
       'Sajek is reached by jeep from Khagrachhari, and the road is only open to authorised vehicles. ' +
       'Book a resort in advance for weekends, carry cash because ATMs are unreliable, and start before ' +
       'sunrise for the cloud views. Mobile signal is limited, so share your itinerary before you go.',
-    cover_image: '/images/destinations/sajek.jpg',
+    cover_image: '/images/destinations/sajek.svg',
     author_name: 'POTHIK Editorial',
   },
   {
@@ -331,7 +331,7 @@ const BLOGS = [
       'Every Sundarbans trip needs forest department permits and an armed guard. Choose operators that ' +
       'carry waste back, keep noise low around wildlife, and never feed animals. The mangrove protects ' +
       'millions of people from cyclones - travelling lightly is part of the deal.',
-    cover_image: '/images/destinations/sundarbans.jpg',
+    cover_image: '/images/destinations/sundarbans.svg',
     author_name: 'POTHIK Editorial',
   },
 ];

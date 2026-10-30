@@ -686,6 +686,9 @@ async function resolveCategory(payload) {
     if (!category) throw new NotFoundError('Vehicle category');
     return category;
   }
+  if (!payload.categoryCode) {
+    throw new BusinessRuleError('A vehicle category is required', 'VEHICLE_CATEGORY_REQUIRED');
+  }
   const category = await models.VehicleCategory.findOne({ where: { code: payload.categoryCode } });
   if (!category) throw new NotFoundError('Vehicle category');
   return category;

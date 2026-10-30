@@ -11,7 +11,7 @@ const HOTEL = {
   star_rating: 4,
   address: 'Marine Drive Road, Kolatoli, Cox’s Bazar',
   phone: '+8801812345678',
-  image_url: '/images/hotels/sea-crown.jpg',
+  image_url: '/images/hotels/sea-crown.svg',
   facilities: ['Rooftop pool', 'Free breakfast', 'Airport transfer', 'Sea view', 'Room service', 'Wi-Fi'],
   rooms: [
     {
@@ -21,7 +21,7 @@ const HOTEL = {
       capacity_children: 1,
       base_price: 5500,
       total_units: 8,
-      image_url: '/images/hotels/deluxe-sea-view.jpg',
+      image_url: '/images/hotels/deluxe-sea-view.svg',
       amenities: ['Sea view', 'AC', 'Breakfast', 'Hot water'],
     },
     {
@@ -31,7 +31,7 @@ const HOTEL = {
       capacity_children: 2,
       base_price: 9500,
       total_units: 3,
-      image_url: '/images/hotels/family-suite.jpg',
+      image_url: '/images/hotels/family-suite.svg',
       amenities: ['Sea view', 'AC', 'Breakfast', 'Living area', 'Bathtub'],
     },
     {
@@ -41,7 +41,7 @@ const HOTEL = {
       capacity_children: 0,
       base_price: 3200,
       total_units: 10,
-      image_url: '/images/hotels/standard-double.jpg',
+      image_url: '/images/hotels/standard-double.svg',
       amenities: ['AC', 'Hot water', 'Wi-Fi'],
     },
   ],
@@ -55,7 +55,7 @@ const VEHICLES = [
     registration_no: 'DHAKA-HA-11-2233',
     capacity: 45,
     price_per_day: 18000,
-    image_url: '/images/vehicles/bus.jpg',
+    image_url: '/images/vehicles/bus.svg',
     features: ['AC', 'Reclining seats', 'TV', 'Luggage space'],
   },
   {
@@ -66,7 +66,7 @@ const VEHICLES = [
     capacity: 9,
     price_per_day: 8000,
     price_per_km: 35,
-    image_url: '/images/vehicles/microbus.jpg',
+    image_url: '/images/vehicles/microbus.svg',
     features: ['AC', 'Push-back seats', 'USB charging'],
   },
   {
@@ -77,7 +77,7 @@ const VEHICLES = [
     capacity: 6,
     price_per_day: 6500,
     price_per_km: 45,
-    image_url: '/images/vehicles/jeep.jpg',
+    image_url: '/images/vehicles/jeep.svg',
     features: ['4x4', 'Roof rack', 'Hill certified'],
   },
 ];
@@ -247,7 +247,7 @@ module.exports = {
         daily_rate: 3500,
         hourly_rate: 600,
         service_locations: ['Sylhet', 'Sreemangal', 'Sunamganj', 'Moulvibazar'],
-        photo_url: '/images/guides/nusrat.jpg',
+        photo_url: '/images/guides/nusrat.svg',
         status: 'ACTIVE',
         rating_avg: 4.8,
         rating_count: 19,

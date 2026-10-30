@@ -64,6 +64,10 @@ async function setupDatabase() {
 async function closeDatabase() {
   const { sequelize } = require('../../src/database/sequelize');
   await sequelize.close();
+  if (config.db.dialect === 'sqlite') {
+    const storage = process.env.SQLITE_STORAGE;
+    if (storage && storage !== ':memory:' && fs.existsSync(storage)) fs.rmSync(storage, { force: true });
+  }
 }
 
 module.exports = { setupDatabase, closeDatabase };

@@ -2,9 +2,9 @@
 
 const { setupDatabase, closeDatabase } = require('./helpers/db');
 const { request, app, login, auth } = require('./helpers/session');
-const { models } = require('../../src/models');
-const { today, addDays } = require('../../src/shared/utils/dates');
-const { DemoGateway } = require('../../src/infrastructure/payments/demo.gateway');
+const { models } = require('../src/models');
+const { today, addDays } = require('../src/shared/utils/dates');
+const { DemoGateway } = require('../src/infrastructure/payments/demo.gateway');
 
 jest.setTimeout(60000);
 

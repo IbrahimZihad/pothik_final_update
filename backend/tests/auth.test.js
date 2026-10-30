@@ -19,7 +19,7 @@ describe('auth', () => {
       .post('/api/v1/auth/register')
       .send({ name: 'A', email: 'not-an-email', password: 'short' });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(422);
     expect(response.body.success).toBe(false);
     expect(response.body.code).toBe('VALIDATION_ERROR');
     expect(response.body.errors.map((row) => row.field)).toEqual(expect.arrayContaining(['name', 'email', 'password']));
@@ -52,7 +52,7 @@ describe('auth', () => {
     const provider = await request(app)
       .post('/api/v1/auth/register')
       .send({ name: 'Provider User', email: `provider.${Date.now()}@pothik.test`, password: 'Travel2000!', role: 'HOTEL_OWNER' });
-    expect(provider.status).toBe(400);
+    expect(provider.status).toBe(422);
     expect(provider.body.errors.some((row) => row.field === 'businessName')).toBe(true);
   });
 

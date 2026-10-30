@@ -3,11 +3,11 @@
 const express = require('express');
 const { validate } = require('../../shared/middleware/validate');
 const { authenticate } = require('../../shared/middleware/authenticate');
-const { authorize } = require('../../shared/middleware/authorize');
+const { authorize, requireRoles } = require('../../shared/middleware/authorize');
 const { writeLimiter } = require('../../shared/middleware/rateLimit');
 const { asyncHandler } = require('../../shared/utils/asyncHandler');
 const { success, created } = require('../../shared/responses');
-const { PERMISSIONS } = require('../../shared/constants/roles');
+const { PERMISSIONS, ROLES } = require('../../shared/constants/roles');
 const validators = require('./payment.validators');
 const service = require('./payment.service');
 
@@ -135,7 +135,7 @@ providerRouter.post(
 
 const adminRouter = express.Router();
 
-adminRouter.use(authenticate);
+adminRouter.use(authenticate, requireRoles(ROLES.ADMIN));
 
 adminRouter.get(
   '/payments',

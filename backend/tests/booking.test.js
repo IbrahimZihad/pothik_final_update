@@ -2,8 +2,8 @@
 
 const { setupDatabase, closeDatabase } = require('./helpers/db');
 const { request, app, login, auth } = require('./helpers/session');
-const { models } = require('../../src/models');
-const { today, addDays } = require('../../src/shared/utils/dates');
+const { models } = require('../src/models');
+const { today, addDays } = require('../src/shared/utils/dates');
 
 jest.setTimeout(40000);
 
@@ -149,7 +149,7 @@ describe('booking engine', () => {
       .set(auth(customer.accessToken))
       .send({
         composition: {
-          adults: 16,
+          adults: 14,
           hotel: { hotelId, checkIn, checkOut, rooms: [{ roomId: deluxe.id, units: 7 }] },
         },
       });
