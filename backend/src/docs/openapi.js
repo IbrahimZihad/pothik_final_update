@@ -25,8 +25,20 @@ function buildResponses(status, { auth, notFound, write }) {
   return responses;
 }
 
-function operation({ tags, summary, description, auth = true, params = [], query = [], body, bodyOptional = false, multipart = false, status = 200, notFound = false, write = false }) {
-  const result = { tags, summary, responses: buildResponses(status, { auth, notFound, write }) };
+function operation({ tags, summary, description, auth = true, params = [], query = [], body, bodyOptional = false, multipart = false, download = false, status = 200, notFound = false, write = false }) {
+  const responses = buildResponses(status, { auth, notFound, write });
+  if (download) {
+    responses[status] = {
+      description: 'The stored file, streamed to its owner or an administrator',
+      content: {
+        'image/png': { schema: { type: 'string', format: 'binary' } },
+        'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+        'image/webp': { schema: { type: 'string', format: 'binary' } },
+        'application/pdf': { schema: { type: 'string', format: 'binary' } },
+      },
+    };
+  }
+  const result = { tags, summary, responses };
   if (description) result.description = description;
   if (auth) result.security = SECURITY;
   const parameters = params.map(paramRef);
@@ -282,6 +294,7 @@ post('/provider/payouts', { tags: ['Provider'], summary: 'Request a payout from 
 get('/provider/profile', { tags: ['Provider'], summary: 'Provider profile' });
 patch('/provider/profile', { tags: ['Provider'], summary: 'Update provider profile', body: 'ProviderProfileRequest', write: true });
 get('/provider/documents', { tags: ['Provider'], summary: 'Verification documents' });
+get('/provider/documents/{id}/file', { tags: ['Provider'], summary: 'Stream an owned verification document', params: ['IdParam'], notFound: true, download: true });
 post('/provider/documents', {
   tags: ['Provider'],
   summary: 'Upload a verification document (multipart)',
