@@ -2,6 +2,7 @@
 
 const { setupDatabase, closeDatabase } = require('./helpers/db');
 const { request, app, login, auth } = require('./helpers/session');
+const { models } = require('../src/models');
 const { today, addDays } = require('../src/shared/utils/dates');
 
 jest.setTimeout(40000);
@@ -46,6 +47,32 @@ describe('provider supplier management', () => {
     const documents = await request(app).get('/api/v1/provider/documents').set(auth(hotel.accessToken));
     expect(documents.status).toBe(200);
     expect(Array.isArray(documents.body.data)).toBe(true);
+  });
+
+  it('stores verification documents privately and serves them only to their owner', async () => {
+    const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489', 'hex');
+    const uploaded = await request(app)
+      .post('/api/v1/provider/documents')
+      .set(auth(hotel.accessToken))
+      .field('type', 'TRADE_LICENSE')
+      .attach('file', png, { filename: 'license.png', contentType: 'image/png' });
+    expect(uploaded.status).toBe(201);
+    expect(uploaded.body.data.fileUrl).toMatch(/^\/api\/v1\/provider\/documents\/\d+\/file$/);
+
+    const owner = await request(app).get(uploaded.body.data.fileUrl).set(auth(hotel.accessToken));
+    expect(owner.status).toBe(200);
+    expect(owner.headers['content-type']).toMatch(/image\/png/);
+
+    const otherProvider = await request(app).get(uploaded.body.data.fileUrl).set(auth(transport.accessToken));
+    expect([403, 404]).toContain(otherProvider.status);
+
+    const anonymous = await request(app).get(uploaded.body.data.fileUrl);
+    expect(anonymous.status).toBe(401);
+
+    const stored = await models.ProviderDocument.findByPk(uploaded.body.data.id);
+    expect(stored.file_url).toMatch(/^\/uploads\/private\//);
+    const direct = await request(app).get(stored.file_url);
+    expect(direct.status).toBe(404);
   });
 
   it('creates and updates a hotel and its rooms', async () => {

@@ -1,17 +1,25 @@
 'use strict';
 
+const path = require('path');
 const { Op } = require('sequelize');
 const { models, sequelize } = require('../../models');
 const repository = require('./supplier.repository');
+const config = require('../../config');
 const { NotFoundError, ForbiddenError, BusinessRuleError, ConflictError } = require('../../shared/errors');
 const { getPagination, buildMeta } = require('../../shared/utils/pagination');
 const { uniqueSlug } = require('../../shared/utils/slugify');
 const { enumerateDates, addDays, isPast, today } = require('../../shared/utils/dates');
+const { resolvePrivateUpload } = require('../../shared/utils/privateUploads');
 
 const MAX_AVAILABILITY_DAYS = 90;
 const MAX_STAY_NIGHTS = 60;
 
 // ------------------------------------------------------------------- helpers
+
+function documentFileUrl(document) {
+  if (!document.file_url || !document.file_url.startsWith('/uploads/private/')) return document.file_url || null;
+  return `${config.apiPrefix}/provider/documents/${document.id}/file`;
+}
 
 function assertProvider(user, expectedType) {
   const profile = user.providerProfile;
@@ -407,7 +415,7 @@ async function getProviderProfile(user) {
     documents: (record.documents || []).map((document) => ({
       id: document.id,
       type: document.type,
-      fileUrl: document.file_url,
+      fileUrl: documentFileUrl(document),
       status: document.status,
       notes: document.notes,
       createdAt: document.created_at,
@@ -436,7 +444,7 @@ async function listProviderDocuments(user) {
   return documents.map((document) => ({
     id: document.id,
     type: document.type,
-    fileUrl: document.file_url,
+    fileUrl: documentFileUrl(document),
     status: document.status,
     notes: document.notes,
     createdAt: document.created_at,
@@ -453,16 +461,26 @@ async function uploadProviderDocument(user, file, { type }) {
   const document = await models.ProviderDocument.create({
     provider_profile_id: profile.id,
     type,
-    file_url: `/uploads/${file.filename}`,
+    file_url: `/uploads/private/${file.filename}`,
     status: 'PENDING',
   });
   return {
     id: document.id,
     type: document.type,
-    fileUrl: document.file_url,
+    fileUrl: documentFileUrl(document),
     status: document.status,
     createdAt: document.created_at,
   };
+}
+
+async function getProviderDocumentFile(user, documentId) {
+  const profile = assertProvider(user);
+  const document = await models.ProviderDocument.findOne({
+    where: { id: documentId, provider_profile_id: profile.id },
+  });
+  if (!document) throw new NotFoundError('Provider document');
+  const absolute = resolvePrivateUpload(document.file_url);
+  return { path: absolute, name: path.basename(absolute) };
 }
 
 // ------------------------------------------------------------- hotel (owner)
@@ -979,6 +997,7 @@ module.exports = {
   updateProviderProfile,
   listProviderDocuments,
   uploadProviderDocument,
+  getProviderDocumentFile,
   listProviderHotels,
   createProviderHotel,
   updateProviderHotel,

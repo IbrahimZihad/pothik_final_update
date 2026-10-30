@@ -100,6 +100,18 @@ router.patch(
   )
 );
 
+router.get(
+  '/providers/:id/documents/:documentId/file',
+  authorize(PERMISSIONS.PROVIDERS_READ),
+  validate({ params: validators.documentParams }),
+  asyncHandler(async (req, res) => {
+    const file = await service.getProviderDocumentFile(req.user, req.params.id, req.params.documentId);
+    res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.sendFile(file.path);
+  })
+);
+
 // ----------------------------------------------------------------- bookings
 router.get(
   '/bookings',

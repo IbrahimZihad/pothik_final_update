@@ -1,13 +1,16 @@
 'use strict';
 
+const path = require('path');
 const { Op } = require('sequelize');
 const { models, sequelize } = require('../../models');
+const config = require('../../config');
 const { NotFoundError, ForbiddenError, BusinessRuleError, ConflictError } = require('../../shared/errors');
 const { getPagination, buildMeta } = require('../../shared/utils/pagination');
 const { toAmount } = require('../../shared/utils/money');
 const { uniqueSlug } = require('../../shared/utils/slugify');
 const { invalidateUserContext } = require('../../shared/services/userContext.service');
 const { recordAudit: writeAudit } = require('../../shared/utils/audit');
+const { resolvePrivateUpload } = require('../../shared/utils/privateUploads');
 const bookingService = require('../bookings/booking.service');
 const bookingRepository = require('../bookings/booking.repository');
 const reviewService = require('../reviews/review.service');
@@ -153,7 +156,10 @@ function serializeProvider(profile) {
     documents: (plain.documents || []).map((document) => ({
       id: document.id,
       type: document.type,
-      fileUrl: document.file_url,
+      fileUrl:
+        document.file_url && document.file_url.startsWith('/uploads/private/')
+          ? `${config.apiPrefix}/admin/providers/${plain.id}/documents/${document.id}/file`
+          : document.file_url,
       status: document.status,
       notes: document.notes,
       reviewedAt: document.reviewed_at,
@@ -249,6 +255,15 @@ async function reviewDocument(admin, req, providerId, documentId, { status, note
       { model: models.ProviderDocument, as: 'documents', required: false },
     ],
   }));
+}
+
+async function getProviderDocumentFile(admin, providerId, documentId) {
+  const document = await models.ProviderDocument.findOne({
+    where: { id: documentId, provider_profile_id: providerId },
+  });
+  if (!document) throw new NotFoundError('Provider document');
+  const absolute = resolvePrivateUpload(document.file_url);
+  return { path: absolute, name: path.basename(absolute) };
 }
 
 // ----------------------------------------------------------------- bookings
@@ -525,6 +540,7 @@ module.exports = {
   getProvider,
   decideProvider,
   reviewDocument,
+  getProviderDocumentFile,
   listBookings,
   getBooking,
   listCoupons,

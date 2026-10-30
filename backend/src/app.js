@@ -48,6 +48,12 @@ app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
 app.use(
   '/uploads',
+  (req, res, next) => {
+    if (req.path.startsWith('/private/')) {
+      return res.status(404).json({ success: false, message: 'Not found', code: 'NOT_FOUND' });
+    }
+    return next();
+  },
   express.static(config.uploads.dir, {
     maxAge: config.isProd ? '7d' : 0,
     fallthrough: true,

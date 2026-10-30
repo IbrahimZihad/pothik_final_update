@@ -7,7 +7,7 @@ const multer = require('multer');
 const config = require('../../config');
 const { BusinessRuleError } = require('../errors');
 
-fs.mkdirSync(config.uploads.dir, { recursive: true });
+fs.mkdirSync(path.join(config.uploads.dir, 'private'), { recursive: true });
 
 const ALLOWED_MIME = new Map([
   ['image/jpeg', '.jpg'],
@@ -17,7 +17,9 @@ const ALLOWED_MIME = new Map([
 ]);
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, config.uploads.dir),
+  // Verification documents are personal data: they live outside the public
+  // /uploads tree and are streamed only through authenticated routes.
+  destination: (req, file, cb) => cb(null, path.join(config.uploads.dir, 'private')),
   filename: (req, file, cb) => {
     const ext = ALLOWED_MIME.get(file.mimetype) || path.extname(file.originalname).toLowerCase();
     cb(null, `${randomUUID()}${ext}`);

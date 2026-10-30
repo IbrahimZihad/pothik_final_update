@@ -125,6 +125,17 @@ providerRouter.post(
   )
 );
 
+providerRouter.get(
+  '/documents/:id/file',
+  validate({ params: validators.idParam }),
+  asyncHandler(async (req, res) => {
+    const file = await service.getProviderDocumentFile(req.user, req.params.id);
+    res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.sendFile(file.path);
+  })
+);
+
 // hotels ----------------------------------------------------------------
 providerRouter.get(
   '/hotels',
