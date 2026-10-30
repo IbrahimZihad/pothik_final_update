@@ -30,7 +30,7 @@ class BkashGateway {
     this.appSecret = settings.appSecret;
     this.username = settings.username;
     this.password = settings.password;
-    this.base = settings.baseUrl || (settings.sandbox ? SANDBOX_BASE : PRODUCTION_BASE);
+    this.base = (settings.baseUrl || (settings.sandbox ? SANDBOX_BASE : PRODUCTION_BASE)).replace(/\/+$/, '');
     this.idToken = null;
     this.idTokenExpiresAt = 0;
   }

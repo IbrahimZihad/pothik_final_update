@@ -120,7 +120,7 @@ Until these run, MySQL/Redis/Docker/Nginx/SSLCommerz/bKash/email remain **implem
 ## Follow-ups (not required for the current scope)
 
 - Automatic unpaid-booking expiry and reminder scheduling.
-- Route-level code splitting for the 1,084 kB frontend bundle.
+- Route-level code splitting for the 1,085 kB frontend bundle.
 - SSR/prerendering if page-specific previews are needed on non-JS crawlers.
 - Shared/global rate limiting for multi-replica deployments.
 - Prometheus metrics endpoint and alert rules.

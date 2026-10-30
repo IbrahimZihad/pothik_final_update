@@ -32,7 +32,7 @@
 | Frontend unit tests | `cd frontend && npm test` | **4 files, 22/22 tests passed**, 2.1 s |
 | End-to-end (Chromium) | `cd frontend && npm run test:e2e` | **11/11 tests passed**, 12.2 s, own API + SPA on ports 5100/5180 |
 | Link previews / structured data | `e2e/seo.spec.js` | Absolute `og:image` + dimensions, WebSite/TouristDestination/BlogPosting JSON-LD, noindex search, robots.txt |
-| Production build | `VITE_SITE_URL=https://example.test npm run build` | Built in 6.42 s; main JS 1,084 kB (296 kB gzip); absolute canonical/OG URLs injected |
+| Production build | `VITE_SITE_URL=https://example.test npm run build` | Built in 6.85 s; main JS 1,085 kB (296 kB gzip); absolute canonical/OG URLs injected |
 | Coverage gate | `cd backend && npm run test:coverage` | Exit 0; 83.68% lines / 83.78% functions (80% thresholds) |
 | OpenAPI generation | `cd backend && npm run openapi` | 115 paths / 142 operations written to `docs/openapi.json` |
 | Migrations + seeders | `npm run db:setup` (SQLite) | 7 seeders: 8 divisions, 64 districts, 9 destinations, 4 packages, 3 posts, 9 hotels (1 per destination), transport, guide, 5 bookings |
@@ -123,7 +123,7 @@ These are real and should be addressed before claiming production readiness.
 8. **Booking reminders are not scheduled.** The handler exists, but nothing enqueues reminder jobs yet.
 9. **Rate limits are per API process.** With two replicas the effective limit doubles. Move limiting to Redis or the edge for strict global limits.
 10. **Bilingual coverage is uneven.** All 268 translation keys exist in both languages, and public/auth screens use them, but several dashboard sentences are hardcoded English (for example the account dashboard greeting). Complete the dashboard pass before advertising a fully bilingual product.
-11. **Frontend bundle is one large chunk** (1,084 kB minified). Works, but route-level code splitting is advisable.
+11. **Frontend bundle is one large chunk** (1,085 kB minified). Works, but route-level code splitting is advisable.
 12. **Browser coverage is Chromium only.** Playwright is configured for one project; Firefox/WebKit are not run.
 13. **No Prometheus metrics endpoint.** Health checks, logs and audit logs exist; dashboards/metrics are intentionally not faked.
 14. **Repository hygiene.** `backend/tmp/dev.sqlite` is tracked despite `backend/tmp/` being ignored, and the demo database changes on every run. Untrack it deliberately (preserve a copy first) before sharing the repository.
