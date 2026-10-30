@@ -90,10 +90,6 @@ if (env.NODE_ENV !== 'test' && (!env.JWT_ACCESS_SECRET || !env.JWT_REFRESH_SECRE
 if (isProd && env.PAYMENT_GATEWAY === 'demo') {
   throw new Error('PAYMENT_GATEWAY=demo is forbidden in production');
 }
-if (isProd && env.NODE_ENV === 'production' && !env.SEED_DEMO_PASSWORD) {
-  // demo seeding stays available in production only through an explicit env-provided secret
-  env.SEED_DEMO_PASSWORD = '';
-}
 
 const config = {
   env: env.NODE_ENV,

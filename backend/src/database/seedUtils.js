@@ -11,7 +11,14 @@ const config = require('../config');
 const { models } = require('../models');
 const { sequelize } = require('./sequelize');
 
-const DEMO_PASSWORD = config.seedDemoPassword || 'PothikDemo123';
+const DEMO_PASSWORD = config.seedDemoPassword || (config.isProd ? null : 'PothikDemo123');
+
+function demoPassword() {
+  if (!DEMO_PASSWORD) {
+    throw new Error('SEED_DEMO_PASSWORD must be set before demo accounts can be seeded in production');
+  }
+  return DEMO_PASSWORD;
+}
 
 function dateOffset(days) {
   return dayjs.utc().add(days, 'day').format('YYYY-MM-DD');
@@ -24,7 +31,7 @@ async function findOrCreate(Model, where, defaults) {
   return { instance, created: true };
 }
 
-async function ensureUser({ name, email, phone, role, status = 'ACTIVE', password = DEMO_PASSWORD, locale = 'en' }) {
+async function ensureUser({ name, email, phone, role, status = 'ACTIVE', password = demoPassword(), locale = 'en' }) {
   const password_hash = await bcrypt.hash(password, config.bcryptRounds);
   const [user, created] = await models.User.findOrCreate({
     where: { email },

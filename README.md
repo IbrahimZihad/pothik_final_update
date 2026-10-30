@@ -26,7 +26,7 @@ cd backend && DB_DIALECT=sqlite SQLITE_STORAGE=tmp/dev.sqlite npm run db:setup &
 cd frontend && npm run dev
 ```
 
-Open http://localhost:5173. Demo users created by seeders use the password from `SEED_DEMO_PASSWORD` (default `PothikDemo123`):
+Open http://localhost:5173. Demo users created by seeders use the password from `SEED_DEMO_PASSWORD` (development default `PothikDemo123`; production seeding refuses to run without an explicit value):
 
 | Role | Email |
 | --- | --- |
@@ -53,7 +53,7 @@ The admin account is created from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `backend/.
 | [docs/TESTING.md](docs/TESTING.md) | How to run every suite and what it covers |
 | [docs/IMPLEMENTATION_PROGRESS.md](docs/IMPLEMENTATION_PROGRESS.md) | Phased progress log with evidence |
 
-Interactive API reference: `/api-docs` (Swagger UI) and `/openapi.json`. The spec is intentionally minimal today — see [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) for the full catalogue.
+Interactive API reference: `/api-docs` (Swagger UI) and `/openapi.json`. The OpenAPI 3.0.3 document is generated from the source (`cd backend && npm run openapi`) and covers 114 paths / 140 operations; a copy is written to [docs/openapi.json](docs/openapi.json), with the narrative catalogue in [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md).
 
 ## Layout
 
