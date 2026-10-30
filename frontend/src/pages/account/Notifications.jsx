@@ -9,7 +9,7 @@ import Pagination from '../../components/ui/Pagination';
 import EmptyState from '../../components/ui/EmptyState';
 import { CardSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ToastProvider';
-import { formatDate } from '../../lib/format';
+import { formatDate, humanize } from '../../lib/format';
 
 export default function Notifications() {
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -84,7 +84,7 @@ export default function Notifications() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold text-slate-900">{notification.title}</p>
-                    <span className="text-[11px] uppercase tracking-wide text-slate-400">{notification.type?.replaceAll('.', ' ')}</span>
+                    <span className="text-[11px] font-semibold text-slate-400">{humanize(notification.type?.replaceAll('.', '_'))}</span>
                   </div>
                   <p className="mt-1 text-sm leading-6 text-slate-600">{notification.body}</p>
                   <div className="mt-2 flex items-center gap-3 text-xs text-slate-400">

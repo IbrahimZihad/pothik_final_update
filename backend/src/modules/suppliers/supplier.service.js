@@ -478,6 +478,9 @@ async function listProviderHotels(user) {
         roomCount: plain.rooms?.length || 0,
         totalUnits: (plain.rooms || []).reduce((sum, room) => sum + Number(room.total_units), 0),
       }),
+      phone: plain.phone,
+      email: plain.email,
+      gallery: plain.gallery || [],
       status: plain.status,
       rooms: (plain.rooms || []).map(serializeRoom),
     };

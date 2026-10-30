@@ -3,16 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { errorMessage } from '../lib/api';
+import { canReturnTo, homeForUser } from '../lib/roles';
 import AuthShell from '../components/auth/AuthShell';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
-
-function homeFor(user) {
-  const roles = user?.roles || [];
-  if (roles.includes('ADMIN')) return '/admin';
-  if (roles.some((role) => ['HOTEL_OWNER', 'TRANSPORT_PROVIDER', 'TOUR_GUIDE'].includes(role))) return '/provider';
-  return '/account';
-}
 
 export default function Login() {
   const auth = useAuth();
@@ -30,7 +24,7 @@ export default function Login() {
     setError('');
     try {
       const user = await auth.login(form.email.trim(), form.password);
-      const target = from && !from.startsWith('/login') ? from : homeFor(user);
+      const target = from && !from.startsWith('/login') && canReturnTo(from, user) ? from : homeForUser(user);
       navigate(target, { replace: true });
     } catch (err) {
       setError(errorMessage(err));

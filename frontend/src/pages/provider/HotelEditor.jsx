@@ -97,7 +97,7 @@ export default function HotelEditor() {
         checkinTime: hotel.checkinTime || '14:00',
         checkoutTime: hotel.checkoutTime || '12:00',
         facilities: (hotel.facilities || []).join(', '),
-        gallery: '',
+        gallery: (hotel.gallery || []).join(', '),
         status: hotel.status || 'DRAFT',
       });
     }

@@ -275,7 +275,10 @@ async function findOwnHotel(id, providerProfileId) {
 async function listOwnHotels(providerProfileId) {
   return models.Hotel.findAll({
     where: { provider_profile_id: providerProfileId },
-    include: [{ model: models.HotelRoom, as: 'rooms', separate: true, order: [['id', 'ASC']] }],
+    include: [
+      { model: models.Destination, as: 'destination' },
+      { model: models.HotelRoom, as: 'rooms', separate: true, order: [['id', 'ASC']] },
+    ],
     order: [['created_at', 'DESC']],
   });
 }

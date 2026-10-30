@@ -192,7 +192,7 @@ export default function DashboardLayout() {
             >
               <Globe className="h-4 w-4" /> {t('common.language')}
             </button>
-            {!auth.isAdmin && (
+            {!auth.isAdmin && !auth.isProvider && (
               <Link to="/account/notifications" className="rounded-lg p-2 text-slate-600 hover:bg-slate-100" aria-label={t('account.notifications')}>
                 <Bell className="h-5 w-5" />
               </Link>

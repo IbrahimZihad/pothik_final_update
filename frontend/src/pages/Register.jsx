@@ -4,6 +4,7 @@ import { Building2, Compass, Hotel, UserRound, Car } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../auth/AuthProvider';
 import { errorMessage } from '../lib/api';
+import { canReturnTo, homeForUser } from '../lib/roles';
 import AuthShell from '../components/auth/AuthShell';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
@@ -43,7 +44,7 @@ export default function Register() {
     setSubmitting(true);
     setError('');
     try {
-      await auth.register({
+      const user = await auth.register({
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim() || undefined,
@@ -51,8 +52,7 @@ export default function Register() {
         role: form.role,
         ...(isProvider ? { businessName: form.businessName.trim() } : {}),
       });
-      if (isProvider) navigate('/provider', { replace: true });
-      else navigate(from || '/account', { replace: true });
+      navigate(from && canReturnTo(from, user) ? from : homeForUser(user), { replace: true });
     } catch (err) {
       setError(errorMessage(err));
     } finally {

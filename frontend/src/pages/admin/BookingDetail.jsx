@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
 import { PageLoader } from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
-import { formatCurrency, formatDate, formatDateRange } from '../../lib/format';
+import { formatCurrency, formatDate, formatDateRange, humanize } from '../../lib/format';
 
 export default function AdminBookingDetail() {
   const { reference } = useParams();
@@ -36,7 +36,7 @@ export default function AdminBookingDetail() {
 
       <DashHead
         eyebrow={`Booking ${booking.reference}`}
-        title={booking.type.replaceAll('_', ' ').toLowerCase()}
+        title={humanize(booking.type)}
         description={`${formatDateRange(booking.startDate, booking.endDate)} · created ${formatDate(booking.createdAt)}`}
         actions={<StatusBadge status={booking.status} />}
       />
@@ -51,7 +51,7 @@ export default function AdminBookingDetail() {
                   <div>
                     <p className="font-semibold text-slate-800">{item.title}</p>
                     <p className="text-xs text-slate-500">
-                      {item.itemType.toLowerCase()} · {formatDateRange(item.startDate, item.endDate)} · provider #{item.providerProfileId || '—'}
+                      {humanize(item.itemType)} · {formatDateRange(item.startDate, item.endDate)} · provider #{item.providerProfileId || '—'}
                     </p>
                   </div>
                   <div className="text-right">

@@ -13,7 +13,7 @@ import { StatusBadge } from '../../components/ui/Badge';
 import { PageLoader } from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import { useToast } from '../../components/ToastProvider';
-import { formatCurrency, formatDate, formatDateRange, pluralize } from '../../lib/format';
+import { formatCurrency, formatDate, formatDateRange, humanize, pluralize } from '../../lib/format';
 
 const CANCELLABLE = ['PENDING', 'AWAITING_CONFIRMATION', 'QUOTED', 'AWAITING_PAYMENT', 'CONFIRMED'];
 const PAYABLE = ['AWAITING_PAYMENT', 'CONFIRMED'];
@@ -97,7 +97,7 @@ export default function AccountBookingDetail() {
 
       <DashHead
         eyebrow={`Booking ${booking.reference}`}
-        title={booking.type.replaceAll('_', ' ').toLowerCase()}
+        title={humanize(booking.type)}
         description={`${formatDateRange(booking.startDate, booking.endDate)} · ${pluralize(booking.adults, 'adult')}${
           booking.children ? `, ${pluralize(booking.children, 'child', 'children')}` : ''
         }`}
@@ -138,7 +138,7 @@ export default function AccountBookingDetail() {
                   <div>
                     <p className="font-semibold text-slate-800">{item.title}</p>
                     <p className="mt-0.5 text-xs text-slate-500">
-                      {item.itemType.toLowerCase()} · {formatDateRange(item.startDate, item.endDate)}
+                      {humanize(item.itemType)} · {formatDateRange(item.startDate, item.endDate)}
                     </p>
                   </div>
                   <div className="text-right">

@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
     const data = await readData(api.post('/auth/register', payload));
     setAccessToken(data.accessToken);
     setUser(data.user);
-    return data;
+    return data.user;
   }, []);
 
   const logout = useCallback(async () => {
