@@ -9,11 +9,27 @@ import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
 import { useLanguage } from '../i18n/LanguageProvider';
+import { breadcrumb, collectionPage, graph, useSeo } from '../lib/seo';
+
+const DESCRIPTION =
+  'Beaches, hill tracts, tea gardens and the Sundarbans. Filter by landscape and start a custom trip from any destination.';
 
 export default function Destinations() {
   const { t } = useLanguage();
   const [filters, setFilters] = useState({ category: '', sort: 'popular', search: '', page: 1 });
   const [term, setTerm] = useState('');
+  useSeo({
+    title: 'Destinations in Bangladesh',
+    description: DESCRIPTION,
+    url: '/destinations',
+    jsonLd: graph(
+      collectionPage({ name: 'Destinations in Bangladesh', description: DESCRIPTION, path: '/destinations' }),
+      breadcrumb([
+        { name: 'Home', path: '/' },
+        { name: 'Destinations', path: '/destinations' },
+      ])
+    ),
+  });
 
   const meta = useQuery({
     queryKey: ['destinations', 'meta'],

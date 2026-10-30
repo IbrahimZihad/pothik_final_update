@@ -4,10 +4,10 @@ POTHIK has three executable layers plus manual browser checks. All commands belo
 
 | Layer | Tool | Location | Command | Last result |
 | --- | --- | --- | --- | --- |
-| API integration | Jest + Supertest | `backend/tests` | `cd backend && npm test` | 8 suites, 56 tests, 148.3 s |
-| UI unit/component | Vitest + Testing Library | `frontend/src/**/*.test.*` | `cd frontend && npm test` | 3 files, 14 tests |
-| End-to-end | Playwright (Chromium) | `frontend/e2e` | `cd frontend && npm run test:e2e` | 7 tests, 28.6 s |
-| Production build | Vite | `frontend` | `cd frontend && npm run build` | Build succeeds |
+| API integration | Jest + Supertest | `backend/tests` | `cd backend && npm test` | 8 suites, 56 tests, 173.7 s |
+| UI unit/component | Vitest + Testing Library | `frontend/src/**/*.test.*` | `cd frontend && npm test` | 4 files, 22 tests, 2.1 s |
+| End-to-end | Playwright (Chromium) | `frontend/e2e` | `cd frontend && npm run test:e2e` | 11 tests, 12.2 s |
+| Production build | Vite | `frontend` | `VITE_SITE_URL=https://example.test npm run build` | Build succeeds; absolute URLs injected |
 | OpenAPI document | Node | `backend/src/docs` | `cd backend && npm run openapi` | 114 paths, 140 operations |
 
 Results were recorded on 2026-10-30 with SQLite and the demo payment gateway. See [PROJECT_AUDIT.md](PROJECT_AUDIT.md) for what was and was not verified.
@@ -51,6 +51,7 @@ Assertions include HTTP status, envelope shape, error codes, database state and 
 ### Frontend unit suite
 
 - `src/lib/format.test.js` — currency, dates/ranges, nights/days, initials, status tones, text preview.
+- `src/lib/seo.test.jsx` — URL absolutization, truncation, breadcrumbs, OG/Twitter/canonical updates, SVG fallback to `og.png`, noindex, default reset, and the `useSeo` mount/unmount lifecycle.
 - `src/i18n/LanguageProvider.test.jsx` — default language, Bangla switching, persistence, fallback keys.
 - `src/components/ui/Badge.test.jsx` — status tones, empty status, accessible rating and rating input.
 
@@ -61,13 +62,14 @@ Vitest runs in jsdom with `src/test/setup.js` (jest-dom matchers and cleanup). C
 `frontend/playwright.config.js` starts everything it needs:
 
 - API on `http://localhost:5100` using `backend/tmp/e2e.sqlite`, migrations and seeders;
-- Vite on `http://localhost:5180` with `VITE_API_URL=http://localhost:5100/api/v1`;
-- Chromium only, one worker, traces on first retry, screenshots on failure.
+- Vite on `http://localhost:5180` with `VITE_API_URL=http://localhost:5100/api/v1` and `VITE_SITE_URL=http://localhost:5180`;
+- Chromium, traces on first retry, screenshots on failure.
 
 Specs:
 
 - `public.spec.js` — home renders with navigation, destinations list seeded data, hotel listing shows the seeded hotel, unknown route renders 404.
 - `auth.spec.js` — seeded customer signs in and reaches `/account`; wrong password shows an error; anonymous `/account` redirects to `/login`.
+- `seo.spec.js` — home exposes an absolute `og:image`, 1200×630 dimensions, Twitter card and WebSite JSON-LD; destination detail publishes `TouristDestination` plus a breadcrumb; journal articles publish `BlogPosting` with `article:published_time`; `/search` is `noindex` and `robots.txt` disallows private areas.
 
 The suite is self-contained but requires ports 5100 and 5180 to be free. Set `E2E_API_PORT` / `E2E_WEB_PORT` to change them. In CI set `CI=1`, which disables server reuse and adds one retry.
 

@@ -10,12 +10,43 @@ import SmartImage from '../components/ui/SmartImage';
 import ReviewList from '../components/site/ReviewList';
 import { PackageCard } from '../components/site/Cards';
 import { formatCurrency, formatDate } from '../lib/format';
+import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
 
 export default function DestinationDetail() {
   const { slug } = useParams();
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['destination', slug],
     queryFn: () => readData(api.get(`/destinations/${slug}`)),
+  });
+
+  useSeo({
+    title: data?.name,
+    description: data?.summary || data?.description,
+    image: data?.coverImage,
+    url: `/destinations/${slug}`,
+    jsonLd: data
+      ? graph(
+          {
+            '@type': 'TouristDestination',
+            name: data.name,
+            description: truncate(data.summary || data.description, 300),
+            image: absoluteUrl(data.coverImage),
+            url: absoluteUrl(`/destinations/${data.slug}`),
+            touristType: data.category?.name,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: data.district?.name,
+              addressRegion: data.district?.division,
+              addressCountry: 'BD',
+            },
+          },
+          breadcrumb([
+            { name: 'Home', path: '/' },
+            { name: 'Destinations', path: '/destinations' },
+            { name: data.name, path: `/destinations/${data.slug}` },
+          ])
+        )
+      : null,
   });
 
   if (isLoading) return <PageLoader label="Loading destination…" />;

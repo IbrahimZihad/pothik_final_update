@@ -7,9 +7,25 @@ import { BlogCard } from '../components/site/Cards';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
+import { breadcrumb, collectionPage, graph, useSeo } from '../lib/seo';
+
+const DESCRIPTION =
+  'Route ideas, season advice and practical notes from the operators and guides on our platform.';
 
 export default function Blogs() {
   const [page, setPage] = useState(1);
+  useSeo({
+    title: 'The POTHIK journal',
+    description: DESCRIPTION,
+    url: '/journal',
+    jsonLd: graph(
+      collectionPage({ name: 'The POTHIK journal', description: DESCRIPTION, path: '/journal' }),
+      breadcrumb([
+        { name: 'Home', path: '/' },
+        { name: 'Journal', path: '/journal' },
+      ])
+    ),
+  });
   const list = useQuery({
     queryKey: ['blogs', page],
     queryFn: () => readData(api.get('/blogs', { params: { page, limit: 9 } })),

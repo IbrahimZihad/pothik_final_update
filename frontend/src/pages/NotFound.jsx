@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom';
 import { Compass } from 'lucide-react';
 import Button from '../components/ui/Button';
+import { useSeo } from '../lib/seo';
 
 export default function NotFound() {
+  useSeo({
+    title: 'Page not found',
+    description: 'The page you were looking for does not exist. Browse destinations or build a trip instead.',
+    noindex: true,
+  });
+
   return (
     <div className="container-page flex min-h-[70vh] flex-col items-center justify-center py-16 text-center">
       <span className="grid h-16 w-16 place-items-center rounded-3xl bg-primary-50 text-primary-600">

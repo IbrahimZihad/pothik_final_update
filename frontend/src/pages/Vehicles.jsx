@@ -8,9 +8,25 @@ import { CardSkeleton } from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
+import { breadcrumb, collectionPage, graph, useSeo } from '../lib/seo';
+
+const DESCRIPTION =
+  'Choose by group size and route. Prices are quoted per rental day and checked against driver availability before the booking is created.';
 
 export default function Vehicles() {
   const [filters, setFilters] = useState({ category: '', minCapacity: '', sort: 'rating', page: 1 });
+  useSeo({
+    title: 'Transport and vehicle hire in Bangladesh',
+    description: DESCRIPTION,
+    url: '/transport',
+    jsonLd: graph(
+      collectionPage({ name: 'Transport and vehicle hire in Bangladesh', description: DESCRIPTION, path: '/transport' }),
+      breadcrumb([
+        { name: 'Home', path: '/' },
+        { name: 'Transport', path: '/transport' },
+      ])
+    ),
+  });
 
   const categories = useQuery({
     queryKey: ['vehicles', 'categories'],

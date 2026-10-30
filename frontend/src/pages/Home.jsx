@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, BadgeCheck, CheckCircle2, Languages, MapPin, Search, ShieldCheck, Sparkles } from 'lucide-react';
 import { api, readData } from '../lib/api';
 import { useLanguage } from '../i18n/LanguageProvider';
+import { useSeo } from '../lib/seo';
 import { todayISO, addDaysISO } from '../lib/format';
 import Button from '../components/ui/Button';
 import SectionHeading from '../components/ui/SectionHeading';
@@ -35,6 +36,7 @@ export default function Home() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { destinations, packages, hotels, allDestinations } = useHomeData();
+  useSeo({});
   const [form, setForm] = useState({
     destinationSlug: '',
     startDate: addDaysISO(todayISO(), 14),

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /provider
+Disallow: /admin
+Disallow: /pay
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password

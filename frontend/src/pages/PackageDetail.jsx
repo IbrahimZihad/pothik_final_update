@@ -13,6 +13,7 @@ import SmartImage from '../components/ui/SmartImage';
 import ReviewList from '../components/site/ReviewList';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { formatCurrency, formatDateRange, todayISO } from '../lib/format';
+import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
 
 export default function PackageDetail() {
   const { slug } = useParams();
@@ -25,6 +26,43 @@ export default function PackageDetail() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['package', slug],
     queryFn: () => readData(api.get(`/packages/${slug}`)),
+  });
+
+  const packagePrice = Number(data?.pricePerPerson) || 0;
+
+  useSeo({
+    title: data?.title,
+    description: data?.summary || data?.description,
+    image: data?.coverImage,
+    url: `/packages/${slug}`,
+    jsonLd: data
+      ? graph(
+          {
+            '@type': 'TouristTrip',
+            name: data.title,
+            description: truncate(data.summary || data.description, 300),
+            image: absoluteUrl(data.coverImage),
+            url: absoluteUrl(`/packages/${data.slug}`),
+            touristType: 'Leisure',
+            provider: data.operator?.name ? { '@type': 'Organization', name: data.operator.name } : undefined,
+            offers:
+              packagePrice > 0
+                ? {
+                    '@type': 'Offer',
+                    price: packagePrice,
+                    priceCurrency: 'BDT',
+                    availability: 'https://schema.org/InStock',
+                    url: absoluteUrl(`/packages/${data.slug}`),
+                  }
+                : undefined,
+          },
+          breadcrumb([
+            { name: 'Home', path: '/' },
+            { name: 'Packages', path: '/packages' },
+            { name: data.title, path: `/packages/${data.slug}` },
+          ])
+        )
+      : null,
   });
 
   const departures = useMemo(

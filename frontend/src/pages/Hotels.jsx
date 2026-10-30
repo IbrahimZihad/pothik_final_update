@@ -8,10 +8,26 @@ import { CardSkeleton } from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
+import { breadcrumb, collectionPage, graph, useSeo } from '../lib/seo';
+
+const DESCRIPTION =
+  'Every property is operated by an approved provider. Availability and nightly rates are checked against real reservations.';
 
 export default function Hotels() {
   const [filters, setFilters] = useState({ destination: '', stars: '', minPrice: '', maxPrice: '', sort: 'rating', search: '', page: 1 });
   const [term, setTerm] = useState('');
+  useSeo({
+    title: 'Hotels and stays in Bangladesh',
+    description: DESCRIPTION,
+    url: '/hotels',
+    jsonLd: graph(
+      collectionPage({ name: 'Hotels and stays in Bangladesh', description: DESCRIPTION, path: '/hotels' }),
+      breadcrumb([
+        { name: 'Home', path: '/' },
+        { name: 'Hotels', path: '/hotels' },
+      ])
+    ),
+  });
 
   const destinations = useQuery({
     queryKey: ['hotels', 'destination-options'],

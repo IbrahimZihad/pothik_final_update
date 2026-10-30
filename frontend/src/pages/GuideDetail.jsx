@@ -14,6 +14,7 @@ import { Input } from '../components/ui/Field';
 import ReviewList from '../components/site/ReviewList';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { addDaysISO, formatCurrency, formatDate, formatDateRange, daysBetween, initials, todayISO } from '../lib/format';
+import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
 
 export default function GuideDetail() {
   const { id } = useParams();
@@ -33,6 +34,44 @@ export default function GuideDetail() {
   const guide = useQuery({
     queryKey: ['guide', id],
     queryFn: () => readData(api.get(`/guides/${id}`)),
+  });
+
+  const guideName = guide.data?.provider?.businessName || 'Local guide';
+  const guideRate = Number(guide.data?.dailyRate) || 0;
+
+  useSeo({
+    title: guide.data ? guideName : undefined,
+    description: guide.data?.bio,
+    image: guide.data?.photo,
+    url: `/guides/${id}`,
+    jsonLd: guide.data
+      ? graph(
+          {
+            '@type': 'Service',
+            name: `${guideName} — local guide`,
+            serviceType: 'Guided tours',
+            description: truncate(guide.data.bio, 300),
+            image: absoluteUrl(guide.data.photo),
+            areaServed: (guide.data.serviceLocations || []).join(', ') || 'Bangladesh',
+            provider: { '@type': 'Person', name: guideName },
+            offers:
+              guideRate > 0
+                ? {
+                    '@type': 'Offer',
+                    price: guideRate,
+                    priceCurrency: 'BDT',
+                    availability: 'https://schema.org/InStock',
+                    url: absoluteUrl(`/guides/${guide.data.id}`),
+                  }
+                : undefined,
+          },
+          breadcrumb([
+            { name: 'Home', path: '/' },
+            { name: 'Guides', path: '/guides' },
+            { name: guideName, path: `/guides/${guide.data.id}` },
+          ])
+        )
+      : null,
   });
 
   const validRange = Boolean(trip.startDate && trip.endDate && trip.endDate >= trip.startDate);

@@ -14,6 +14,7 @@ import { Input } from '../components/ui/Field';
 import ReviewList from '../components/site/ReviewList';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { addDaysISO, formatCurrency, formatDate, nightsBetween, todayISO } from '../lib/format';
+import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
 
 const FACILITY_ICONS = { wifi: Wifi, breakfast: Utensils, restaurant: Utensils };
 
@@ -31,6 +32,42 @@ export default function HotelDetail() {
   const hotel = useQuery({
     queryKey: ['hotel', slug],
     queryFn: () => readData(api.get(`/hotels/${slug}`)),
+  });
+
+  const roomPrices = (hotel.data?.rooms || []).map((room) => Number(room.basePrice)).filter((price) => price > 0);
+  const priceFrom = roomPrices.length ? Math.min(...roomPrices) : null;
+
+  useSeo({
+    title: hotel.data?.name,
+    description: hotel.data?.description || hotel.data?.summary,
+    image: hotel.data?.image,
+    url: `/hotels/${slug}`,
+    jsonLd: hotel.data
+      ? graph(
+          {
+            '@type': 'Hotel',
+            name: hotel.data.name,
+            description: truncate(hotel.data.description || hotel.data.summary, 300),
+            image: absoluteUrl(hotel.data.image),
+            url: absoluteUrl(`/hotels/${hotel.data.slug}`),
+            starRating: hotel.data.starRating
+              ? { '@type': 'Rating', ratingValue: hotel.data.starRating, bestRating: 5 }
+              : undefined,
+            priceRange: priceFrom ? `BDT ${priceFrom}` : undefined,
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: hotel.data.address,
+              addressLocality: hotel.data.destination?.name,
+              addressCountry: 'BD',
+            },
+          },
+          breadcrumb([
+            { name: 'Home', path: '/' },
+            { name: 'Hotels', path: '/hotels' },
+            { name: hotel.data.name, path: `/hotels/${hotel.data.slug}` },
+          ])
+        )
+      : null,
   });
 
   const hotelId = hotel.data?.id;

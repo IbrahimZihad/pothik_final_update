@@ -8,6 +8,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Button from '../components/ui/Button';
 import SmartImage from '../components/ui/SmartImage';
 import { formatDate } from '../lib/format';
+import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
 
 export default function BlogDetail() {
   const { slug } = useParams();
@@ -15,6 +16,45 @@ export default function BlogDetail() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['blog', slug],
     queryFn: () => readData(api.get(`/blogs/${slug}`)),
+  });
+
+  const title = data ? (isBangla && data.titleBn ? data.titleBn : data.title) : undefined;
+
+  useSeo({
+    title,
+    description: data?.excerpt,
+    image: data?.coverImage,
+    url: `/journal/${slug}`,
+    type: 'article',
+    publishedTime: data?.publishedAt,
+    jsonLd: data
+      ? graph(
+          {
+            '@type': 'BlogPosting',
+            headline: title,
+            description: truncate(data.excerpt, 300),
+            image: absoluteUrl(data.coverImage),
+            datePublished: data.publishedAt,
+            dateModified: data.publishedAt,
+            inLanguage: isBangla ? 'bn' : 'en',
+            author: {
+              '@type': data.author ? 'Person' : 'Organization',
+              name: data.author || 'POTHIK Editorial',
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'POTHIK',
+              logo: { '@type': 'ImageObject', url: absoluteUrl('/logo.svg') },
+            },
+            mainEntityOfPage: absoluteUrl(`/journal/${data.slug}`),
+          },
+          breadcrumb([
+            { name: 'Home', path: '/' },
+            { name: 'Journal', path: '/journal' },
+            { name: title, path: `/journal/${data.slug}` },
+          ])
+        )
+      : null,
   });
 
   if (isLoading) return <PageLoader label="Loading story…" />;
@@ -31,7 +71,6 @@ export default function BlogDetail() {
     );
   }
 
-  const title = isBangla && data.titleBn ? data.titleBn : data.title;
   const paragraphs = String(data.content || data.excerpt || '').split(/\n{2,}/).filter(Boolean);
 
   return (

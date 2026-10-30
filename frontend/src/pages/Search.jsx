@@ -9,6 +9,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Button from '../components/ui/Button';
 import { CardSkeleton } from '../components/ui/Skeleton';
 import { formatCurrency } from '../lib/format';
+import { useSeo } from '../lib/seo';
 
 function Section({ title, icon: Icon, count, children }) {
   if (!count) return null;
@@ -44,6 +45,12 @@ export default function Search() {
   const initial = params.get('q') || '';
   const [term, setTerm] = useState(initial);
   const [submitted, setSubmitted] = useState(initial);
+  useSeo({
+    title: submitted ? `Search: ${submitted}` : 'Search POTHIK',
+    description: 'Search destinations, packages, hotels and guides across Bangladesh.',
+    url: '/search',
+    noindex: true,
+  });
 
   useEffect(() => {
     setTerm(initial);

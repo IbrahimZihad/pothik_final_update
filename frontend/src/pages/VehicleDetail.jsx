@@ -13,6 +13,7 @@ import SmartImage from '../components/ui/SmartImage';
 import { Input } from '../components/ui/Field';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { addDaysISO, formatCurrency, formatDate, formatDateRange, pluralize, todayISO } from '../lib/format';
+import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
 
 export default function VehicleDetail() {
   const { id } = useParams();
@@ -32,6 +33,46 @@ export default function VehicleDetail() {
   const vehicle = useQuery({
     queryKey: ['vehicle', id],
     queryFn: () => readData(api.get(`/vehicles/${id}`)),
+  });
+
+  const vehiclePrice = Number(vehicle.data?.pricePerDay) || 0;
+
+  useSeo({
+    title: vehicle.data?.name,
+    description: vehicle.data?.provider?.description,
+    image: vehicle.data?.image,
+    url: `/transport/${id}`,
+    jsonLd: vehicle.data
+      ? graph(
+          {
+            '@type': 'Product',
+            name: vehicle.data.name,
+            description: truncate(
+              vehicle.data.provider?.description ||
+                `${vehicle.data.name} with a verified POTHIK operator, seating ${vehicle.data.capacity} passengers.`,
+              300
+            ),
+            image: absoluteUrl(vehicle.data.image),
+            category: vehicle.data.category?.name,
+            brand: { '@type': 'Brand', name: vehicle.data.provider?.businessName || 'POTHIK' },
+            offers:
+              vehiclePrice > 0
+                ? {
+                    '@type': 'Offer',
+                    price: vehiclePrice,
+                    priceCurrency: 'BDT',
+                    availability: 'https://schema.org/InStock',
+                    url: absoluteUrl(`/transport/${vehicle.data.id}`),
+                  }
+                : undefined,
+          },
+          breadcrumb([
+            { name: 'Home', path: '/' },
+            { name: 'Transport', path: '/transport' },
+            { name: vehicle.data.name, path: `/transport/${vehicle.data.id}` },
+          ])
+        )
+      : null,
   });
 
   const validRange = Boolean(trip.startDate && trip.endDate && trip.endDate > trip.startDate);

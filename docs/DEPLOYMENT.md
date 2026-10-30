@@ -57,7 +57,7 @@ Important rules:
 
 - `NODE_ENV=production` plus `PAYMENT_GATEWAY=demo` is rejected at boot by `backend/src/config/index.js`.
 - `ADMIN_PASSWORD` is used only by the admin seeder. Set it deliberately, then keep it out of version control.
-- `PUBLIC_URL` must be the exact HTTPS origin users hit; it drives CORS and gateway return URLs.
+- `PUBLIC_URL` must be the exact HTTPS origin users hit; it drives CORS, gateway return URLs and the canonical/Open Graph URLs baked into the frontend build.
 - Never commit `deployment/.env`.
 
 ## 3. Build and start
@@ -76,6 +76,17 @@ docker compose ps
 curl -fsS http://localhost/api/v1/health/ready
 curl -fsS http://localhost/nginx-health
 ```
+
+### Link previews
+
+The frontend image receives `PUBLIC_URL` as the `VITE_SITE_URL` build argument, so canonical, `og:url` and `og:image` are absolute in the built `index.html`. After changing the domain, rebuild the frontend:
+
+```bash
+docker compose build --no-cache frontend
+docker compose up -d --no-deps frontend
+```
+
+Check the delivered head with `curl -fsS http://localhost/ | grep -E 'og:image|canonical'`. WhatsApp/Facebook/LinkedIn read only this static head, so they show the site-level preview for every URL; Google/Bing execute JavaScript and see per-page metadata. Page-specific previews for non-JS crawlers need SSR or prerendering (not implemented).
 
 ### Demo data (staging only)
 

@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "og:image": "node scripts/generate-og-image.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",

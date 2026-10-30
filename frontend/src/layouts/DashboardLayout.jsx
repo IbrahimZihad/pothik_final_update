@@ -31,6 +31,7 @@ import {
 import Logo from '../components/Logo';
 import { useAuth } from '../auth/AuthProvider';
 import { useLanguage } from '../i18n/LanguageProvider';
+import { useSeo } from '../lib/seo';
 
 const CUSTOMER_NAV = [
   { to: '/account', label: 'account.dashboard', icon: LayoutDashboard, end: true },
@@ -96,6 +97,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  useSeo({ title: 'Dashboard', noindex: true });
 
   useEffect(() => {
     setOpen(false);

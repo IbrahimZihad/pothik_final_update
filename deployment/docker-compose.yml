@@ -151,6 +151,7 @@ services:
       context: ../frontend
       args:
         VITE_API_URL: /api/v1
+        VITE_SITE_URL: ${PUBLIC_URL:-http://localhost}
     image: pothik-web:1.0.0
     restart: unless-stopped
     expose:

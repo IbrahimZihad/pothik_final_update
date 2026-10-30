@@ -8,6 +8,10 @@ import { CardSkeleton } from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
+import { breadcrumb, collectionPage, graph, useSeo } from '../lib/seo';
+
+const DESCRIPTION =
+  'Curated multi-day trips with scheduled departures, clear inclusions and seats held in real time.';
 
 const SORTS = [
   { value: 'popular', label: 'Most popular' },
@@ -20,6 +24,18 @@ const SORTS = [
 export default function Packages() {
   const [filters, setFilters] = useState({ destination: '', minPrice: '', maxPrice: '', maxDays: '', sort: 'popular', search: '', page: 1 });
   const [term, setTerm] = useState('');
+  useSeo({
+    title: 'Tour packages in Bangladesh',
+    description: DESCRIPTION,
+    url: '/packages',
+    jsonLd: graph(
+      collectionPage({ name: 'Tour packages in Bangladesh', description: DESCRIPTION, path: '/packages' }),
+      breadcrumb([
+        { name: 'Home', path: '/' },
+        { name: 'Packages', path: '/packages' },
+      ])
+    ),
+  });
 
   const destinations = useQuery({
     queryKey: ['packages', 'destination-options'],

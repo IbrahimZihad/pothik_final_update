@@ -8,11 +8,26 @@ import { CardSkeleton } from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
+import { breadcrumb, collectionPage, graph, useSeo } from '../lib/seo';
 
 const LANGUAGES = ['Bangla', 'English', 'German', 'French', 'Japanese', 'Arabic'];
+const DESCRIPTION =
+  'Approved guides set their languages, expertise and daily rate. Check their calendar before booking so your dates are held correctly.';
 
 export default function Guides() {
   const [filters, setFilters] = useState({ language: '', location: '', sort: 'rating', page: 1 });
+  useSeo({
+    title: 'Local tour guides in Bangladesh',
+    description: DESCRIPTION,
+    url: '/guides',
+    jsonLd: graph(
+      collectionPage({ name: 'Local tour guides in Bangladesh', description: DESCRIPTION, path: '/guides' }),
+      breadcrumb([
+        { name: 'Home', path: '/' },
+        { name: 'Guides', path: '/guides' },
+      ])
+    ),
+  });
 
   const list = useQuery({
     queryKey: ['guides', 'list', filters],
