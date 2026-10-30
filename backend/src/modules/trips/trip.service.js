@@ -1,6 +1,5 @@
 'use strict';
 
-const { Op } = require('sequelize');
 const { models, sequelize } = require('../../models');
 const pricing = require('../bookings/pricing.service');
 const { NotFoundError, BusinessRuleError } = require('../../shared/errors');
