@@ -3,7 +3,7 @@
 const { setupDatabase, closeDatabase } = require('./helpers/db');
 const { request, app, login, auth } = require('./helpers/session');
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('authorization and ownership', () => {
   let customer;

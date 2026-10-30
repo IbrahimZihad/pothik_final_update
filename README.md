@@ -37,6 +37,8 @@ Open http://localhost:5173. Demo users created by seeders use the password from 
 
 The admin account is created from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `backend/.env`; no admin password is baked into code or seeders.
 
+Demo content covers all nine destinations, each with at least one published hotel, rooms and 120 days of availability, so every trip-builder step has inventory. Seeders are recorded per file: if your database was seeded before a seeder changed, re-run it by deleting that file's row from `sequelize_seed_meta` (or rebuild the demo database) before `npm run db:seed`.
+
 ## Documentation
 
 | Document | Contents |

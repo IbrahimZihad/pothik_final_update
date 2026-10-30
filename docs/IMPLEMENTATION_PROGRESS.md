@@ -19,7 +19,7 @@ Chronological log of what was built and how it was verified. Every "verified" en
 
 - 47 tables across auth/RBAC, geography, catalog, suppliers, commerce, payments, reviews, notifications and audit.
 - Additive migrations; no `sync({ alter: true })` anywhere.
-- Idempotent seeders: roles/permissions, bootstrap admin from environment, 8 divisions / 64 districts / upazilas, 9 destinations, 4 packages, 3 journal posts, 5 providers (hotel with rooms, transport with vehicles/drivers, guide, two pending applications), customers, bookings, payments, reviews, payouts and notifications.
+- Idempotent seeders: roles/permissions, bootstrap admin from environment, 8 divisions / 64 districts / upazilas, 9 destinations, 4 packages, 3 journal posts, 9 hotels (one published property with rooms and 120 days of availability per destination), transport with vehicles/drivers, guide, two pending applications, customers, bookings, payments, reviews, payouts and notifications.
 - Seeder rerun verified twice without duplicates; a refund-state regression (booking left `REFUND_PENDING` while its refund was `PROCESSED`) was found and fixed by deriving booking status from the existing refund.
 
 ## Phase 3 — Domain modules and booking engine
@@ -41,8 +41,8 @@ Chronological log of what was built and how it was verified. Every "verified" en
 **Status: complete and verified**
 
 - Eight Jest/Supertest suites built on real migrations and seeders, one fresh SQLite database per suite.
-- 56 tests covering auth, access control, catalog, bookings and anti-overbooking, payments/refunds/payouts, reviews, suppliers and admin.
-- Latest run: **8/8 suites, 56/56 tests, 148.327 s**.
+- 57 tests covering auth, access control, catalog (including one published hotel per destination), bookings and anti-overbooking, payments/refunds/payouts, reviews, suppliers and admin.
+- Latest run: **8/8 suites, 57/57 tests, 128.909 s**; coverage run **151.403 s**, exit code 0.
 - Added after review: financial audit rows for refund/payout transitions, Multer error mapping (`413`/`400`), private document storage/download with owner/admin checks, and the refund idempotency fix.
 
 ## Phase 5 — Frontend shell and design system

@@ -96,6 +96,8 @@ Check the delivered head with `curl -fsS http://localhost/ | grep -E 'og:image|c
 
 This requires `SEED_DEMO_PASSWORD` and `ADMIN_PASSWORD`. Demo users then log in with `customer@pothik.test`, `hotel.owner@pothik.test`, `transport@pothik.test`, `guide@pothik.test` and the password you set. Do not seed demo content in production.
 
+Demo content includes a published hotel (rooms plus 120 days of availability) for each of the nine destinations. Seeder execution is tracked per file in `sequelize_seed_meta`, so a staging database seeded before a seeder changed needs that file's row removed — or a rebuild — before re-running `seed` picks up the new data.
+
 ## 4. TLS
 
 1. Obtain certificates (certbot or your load balancer).

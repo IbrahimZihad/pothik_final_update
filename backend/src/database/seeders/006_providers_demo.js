@@ -334,6 +334,31 @@ const VEHICLES = [
   },
 ];
 
+async function seedRoomAvailability(roomRow) {
+  const existing = await models.RoomAvailability.count({ where: { room_id: roomRow.id } });
+  if (existing === 0) {
+    const rows = [];
+    for (let day = 0; day <= 120; day += 1) {
+      rows.push({
+        room_id: roomRow.id,
+        date: dateOffset(day),
+        total_units: roomRow.total_units,
+        reserved_units: 0,
+        is_blocked: false,
+      });
+    }
+    await models.RoomAvailability.bulkCreate(rows);
+    return;
+  }
+  for (let day = 0; day <= 120; day += 1) {
+    const date = dateOffset(day);
+    await models.RoomAvailability.findOrCreate({
+      where: { room_id: roomRow.id, date },
+      defaults: { room_id: roomRow.id, date, total_units: roomRow.total_units, reserved_units: 0, is_blocked: false },
+    });
+  }
+}
+
 async function seedRooms(hotelRow, roomDefs) {
   const roomRows = [];
   for (const room of roomDefs) {
@@ -353,13 +378,7 @@ async function seedRooms(hotelRow, roomDefs) {
       },
     });
     roomRows.push(roomRow);
-    for (let day = 0; day <= 120; day += 1) {
-      const date = dateOffset(day);
-      await models.RoomAvailability.findOrCreate({
-        where: { room_id: roomRow.id, date },
-        defaults: { room_id: roomRow.id, date, total_units: room.total_units, reserved_units: 0, is_blocked: false },
-      });
-    }
+    await seedRoomAvailability(roomRow);
   }
   return roomRows;
 }

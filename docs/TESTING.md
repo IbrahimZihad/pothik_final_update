@@ -4,7 +4,7 @@ POTHIK has three executable layers plus manual browser checks. All commands belo
 
 | Layer | Tool | Location | Command | Last result |
 | --- | --- | --- | --- | --- |
-| API integration | Jest + Supertest | `backend/tests` | `cd backend && npm test` | 8 suites, 56 tests, 173.7 s |
+| API integration | Jest + Supertest | `backend/tests` | `cd backend && npm test` | 8 suites, 57 tests, 128.9 s |
 | UI unit/component | Vitest + Testing Library | `frontend/src/**/*.test.*` | `cd frontend && npm test` | 4 files, 22 tests, 2.1 s |
 | End-to-end | Playwright (Chromium) | `frontend/e2e` | `cd frontend && npm run test:e2e` | 11 tests, 12.2 s |
 | Production build | Vite | `frontend` | `VITE_SITE_URL=https://example.test npm run build` | Build succeeds; absolute URLs injected |
@@ -89,7 +89,7 @@ Performed in a real browser against the running API and SQLite database:
 
 `npm run test:coverage` is configured with an 80% line/function threshold for `src/modules/**` and `src/shared/**` (routes excluded). Coverage is a guardrail, not a substitute for the scenario assertions above.
 
-Latest run (2026-10-30, SQLite): 8 suites / 56 tests passed in 145.6 s, exit code 0 — **83.49% lines** (2114/2532) and **83.39% functions** (457/548) across the collected files, above both thresholds. Re-run the command to refresh these numbers rather than quoting them after code changes.
+Latest run (2026-10-30, SQLite): 8 suites / 57 tests passed in 151.4 s, exit code 0 — **83.49% lines** (2114/2532) and **83.39% functions** (457/548) across the collected files, above both thresholds. Re-run the command to refresh these numbers rather than quoting them after code changes.
 
 ## 4. Gaps
 

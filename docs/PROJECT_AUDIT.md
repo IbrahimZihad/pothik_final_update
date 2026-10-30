@@ -27,14 +27,14 @@
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Backend integration suites | `cd backend && npm test` | **8/8 suites, 56/56 tests passed**, 173.7 s (latest run, after the production-seeding guard) |
+| Backend integration suites | `cd backend && npm test` | **8/8 suites, 57/57 tests passed**, 128.9 s (latest run) |
 | Frontend unit tests | `cd frontend && npm test` | **4 files, 22/22 tests passed**, 2.1 s |
 | End-to-end (Chromium) | `cd frontend && npm run test:e2e` | **11/11 tests passed**, 12.2 s, own API + SPA on ports 5100/5180 |
 | Link previews / structured data | `e2e/seo.spec.js` | Absolute `og:image` + dimensions, WebSite/TouristDestination/BlogPosting JSON-LD, noindex search, robots.txt |
 | Production build | `VITE_SITE_URL=https://example.test npm run build` | Built in 6.42 s; main JS 1,084 kB (296 kB gzip); absolute canonical/OG URLs injected |
 | Coverage gate | `cd backend && npm run test:coverage` | Exit 0; 83.49% lines / 83.39% functions (80% thresholds) |
 | OpenAPI generation | `cd backend && npm run openapi` | 114 paths / 140 operations written to `docs/openapi.json` |
-| Migrations + seeders | `npm run db:setup` (SQLite) | 7 seeders: 8 divisions, 64 districts, 9 destinations, 4 packages, 3 posts, 5 providers, 5 bookings |
+| Migrations + seeders | `npm run db:setup` (SQLite) | 7 seeders: 8 divisions, 64 districts, 9 destinations, 4 packages, 3 posts, 9 hotels (1 per destination), transport, guide, 5 bookings |
 | Seeder idempotency | Run `db:seed` twice | Second run completed without duplicate rows (refund status stayed `REFUNDED`) |
 | Payout lifecycle | Browser: provider request → admin approve → mark paid | Available balance ৳9,680 → ৳0; paid-out ৳9,680; audit rows written |
 | Audit trail | API + DB inspection | `payout.approved`, `payout.rejected`, `refund.rejected` include actor, IP, request id |

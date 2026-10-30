@@ -134,6 +134,19 @@ describe('public catalogue and admin catalogue management', () => {
     expect(missingVehicle.status).toBe(404);
   });
 
+  it('has at least one published hotel for every destination', async () => {
+    const destinations = await request(app).get('/api/v1/destinations').query({ limit: 50 });
+    expect(destinations.status).toBe(200);
+
+    const missing = [];
+    for (const item of destinations.body.data.items) {
+      const hotels = await request(app).get('/api/v1/hotels').query({ destination: item.slug, limit: 8 });
+      expect(hotels.status).toBe(200);
+      if (hotels.body.data.items.length === 0) missing.push(item.slug);
+    }
+    expect(missing).toEqual([]);
+  });
+
   it('lets admins manage destinations and packages', async () => {
     const created = await request(app)
       .post('/api/v1/admin/destinations')
