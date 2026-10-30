@@ -47,6 +47,258 @@ const HOTEL = {
   ],
 };
 
+// One published property per remaining destination so every trip-builder step has inventory.
+const DESTINATION_HOTELS = [
+  {
+    destination: 'sajek-valley',
+    name: 'Sajek Cloud Nest Resort',
+    slug: 'sajek-cloud-nest-resort',
+    description:
+      'Hilltop cottages above the clouds with valley-view balconies, an open-air dining deck and bonfire evenings.',
+    star_rating: 3,
+    address: 'Ruilui Para, Sajek Valley, Baghaichhari, Rangamati',
+    phone: '+8801711000101',
+    image_url: '/images/destinations/sajek.svg',
+    facilities: ['Valley view', 'Breakfast', 'Bonfire', 'Parking', 'Wi-Fi'],
+    rating_avg: 4.6,
+    rating_count: 18,
+    rooms: [
+      {
+        name: 'Hill View Deluxe',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 4800,
+        total_units: 6,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Valley view', 'AC', 'Breakfast', 'Hot water'],
+      },
+      {
+        name: 'Group Cottage',
+        room_type: 'FAMILY',
+        capacity_adults: 4,
+        capacity_children: 2,
+        base_price: 8200,
+        total_units: 2,
+        image_url: '/images/hotels/family-suite.svg',
+        amenities: ['Valley view', 'Breakfast', 'Living area'],
+      },
+    ],
+  },
+  {
+    destination: 'bandarban',
+    name: 'Nilgiri Hill Lodge',
+    slug: 'nilgiri-hill-lodge',
+    description:
+      'A quiet lodge on the Nilgiri ridge with panoramic hill views, guided treks and a cosy dining room.',
+    star_rating: 3,
+    address: 'Nilgiri, Bandarban Sadar, Bandarban',
+    phone: '+8801711000102',
+    image_url: '/images/destinations/bandarban.svg',
+    facilities: ['Mountain view', 'Breakfast', 'Trek desk', 'Parking'],
+    rating_avg: 4.4,
+    rating_count: 12,
+    rooms: [
+      {
+        name: 'Valley View Double',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 4200,
+        total_units: 8,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Mountain view', 'Hot water', 'Breakfast'],
+      },
+      {
+        name: 'Family Room',
+        room_type: 'FAMILY',
+        capacity_adults: 4,
+        capacity_children: 2,
+        base_price: 6800,
+        total_units: 3,
+        image_url: '/images/hotels/family-suite.svg',
+        amenities: ['Mountain view', 'Breakfast', 'Living area'],
+      },
+    ],
+  },
+  {
+    destination: 'rangamati',
+    name: 'Kaptai Lake Retreat',
+    slug: 'kaptai-lake-retreat',
+    description:
+      'Lakefront rooms with private balconies, boat transfers to Kaptai and a terrace restaurant serving local cuisine.',
+    star_rating: 3,
+    address: 'Lake Side Road, Rangamati Sadar, Rangamati',
+    phone: '+8801711000103',
+    image_url: '/images/destinations/rangamati.svg',
+    facilities: ['Lake view', 'Boat transfer', 'Breakfast', 'Wi-Fi'],
+    rating_avg: 4.3,
+    rating_count: 9,
+    rooms: [
+      {
+        name: 'Lake View Double',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 3900,
+        total_units: 6,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Lake view', 'AC', 'Breakfast'],
+      },
+    ],
+  },
+  {
+    destination: 'sylhet',
+    name: 'Surma Heritage Stay',
+    slug: 'surma-heritage-stay',
+    description:
+      'A restored townhouse near Zindabazar with heritage rooms, a courtyard breakfast and easy access to Ratargul and Jaflong.',
+    star_rating: 4,
+    address: 'Zindabazar, Sylhet',
+    phone: '+8801711000104',
+    image_url: '/images/destinations/sylhet.svg',
+    facilities: ['Heritage building', 'Breakfast', 'Airport pickup', 'Wi-Fi'],
+    rating_avg: 4.5,
+    rating_count: 21,
+    rooms: [
+      {
+        name: 'Heritage Double',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 3600,
+        total_units: 8,
+        image_url: '/images/hotels/standard-double.svg',
+        amenities: ['AC', 'Breakfast', 'Hot water', 'Wi-Fi'],
+      },
+      {
+        name: 'Heritage Suite',
+        room_type: 'SUITE',
+        capacity_adults: 3,
+        capacity_children: 1,
+        base_price: 6200,
+        total_units: 3,
+        image_url: '/images/hotels/family-suite.svg',
+        amenities: ['AC', 'Breakfast', 'Living area', 'Bathtub'],
+      },
+    ],
+  },
+  {
+    destination: 'sundarbans',
+    name: 'Mangrove Tides Eco Resort',
+    slug: 'mangrove-tides-eco-resort',
+    description:
+      'Solar-powered eco cottages on the edge of the Sundarbans with guided boat safaris and locally sourced meals.',
+    star_rating: 3,
+    address: 'Mongla, Bagerhat',
+    phone: '+8801711000105',
+    image_url: '/images/destinations/sundarbans.svg',
+    facilities: ['Eco cottages', 'Boat safari', 'Meals included', 'Solar power'],
+    rating_avg: 4.7,
+    rating_count: 14,
+    rooms: [
+      {
+        name: 'Eco Cottage',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 5200,
+        total_units: 5,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Forest view', 'Breakfast', 'Fan', 'Hot water'],
+      },
+    ],
+  },
+  {
+    destination: 'saint-martin',
+    name: 'Coral Bay Beach Resort',
+    slug: 'coral-bay-beach-resort',
+    description:
+      'Beachfront cottages a short walk from the jetty, with sea-facing verandas, fresh seafood and snorkelling trips.',
+    star_rating: 3,
+    address: 'West Beach, Saint Martin’s Island, Teknaf',
+    phone: '+8801711000106',
+    image_url: '/images/destinations/saint-martin.svg',
+    facilities: ['Beachfront', 'Seafood restaurant', 'Snorkelling', 'Wi-Fi'],
+    rating_avg: 4.6,
+    rating_count: 27,
+    rooms: [
+      {
+        name: 'Sea Breeze Double',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 4600,
+        total_units: 6,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Sea view', 'AC', 'Breakfast'],
+      },
+      {
+        name: 'Family Cottage',
+        room_type: 'FAMILY',
+        capacity_adults: 4,
+        capacity_children: 2,
+        base_price: 7800,
+        total_units: 3,
+        image_url: '/images/hotels/family-suite.svg',
+        amenities: ['Sea view', 'AC', 'Breakfast', 'Living area'],
+      },
+    ],
+  },
+  {
+    destination: 'kuakata',
+    name: 'Kuakata Sunrise Beach Hotel',
+    slug: 'kuakata-sunrise-beach-hotel',
+    description:
+      'Simple, clean rooms facing the Bay of Bengal, five minutes from the sunrise beach and the fishing harbour.',
+    star_rating: 3,
+    address: 'Kuakata Beach Road, Kalapara, Patuakhali',
+    phone: '+8801711000107',
+    image_url: '/images/destinations/kuakata.svg',
+    facilities: ['Sea view', 'Breakfast', 'Parking', 'Wi-Fi'],
+    rating_avg: 4.3,
+    rating_count: 16,
+    rooms: [
+      {
+        name: 'Sea View Double',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 3800,
+        total_units: 8,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Sea view', 'AC', 'Breakfast', 'Hot water'],
+      },
+    ],
+  },
+  {
+    destination: 'sreemangal',
+    name: 'Tea Valley Resort',
+    slug: 'tea-valley-resort',
+    description:
+      'Garden rooms inside a working tea estate, with plantation walks, birdwatching trails and a veranda restaurant.',
+    star_rating: 4,
+    address: 'Radhanagar, Sreemangal, Moulvibazar',
+    phone: '+8801711000108',
+    image_url: '/images/destinations/sreemangal.svg',
+    facilities: ['Tea garden', 'Breakfast', 'Plantation walk', 'Wi-Fi'],
+    rating_avg: 4.5,
+    rating_count: 19,
+    rooms: [
+      {
+        name: 'Garden View Double',
+        room_type: 'DOUBLE',
+        capacity_adults: 2,
+        capacity_children: 1,
+        base_price: 4100,
+        total_units: 6,
+        image_url: '/images/hotels/deluxe-sea-view.svg',
+        amenities: ['Garden view', 'AC', 'Breakfast', 'Hot water'],
+      },
+    ],
+  },
+];
+
 const VEHICLES = [
   {
     name: 'AC Tourist Bus',
@@ -82,6 +334,36 @@ const VEHICLES = [
   },
 ];
 
+async function seedRooms(hotelRow, roomDefs) {
+  const roomRows = [];
+  for (const room of roomDefs) {
+    const [roomRow] = await models.HotelRoom.findOrCreate({
+      where: { hotel_id: hotelRow.id, name: room.name },
+      defaults: {
+        hotel_id: hotelRow.id,
+        name: room.name,
+        room_type: room.room_type,
+        capacity_adults: room.capacity_adults,
+        capacity_children: room.capacity_children,
+        base_price: room.base_price,
+        total_units: room.total_units,
+        image_url: room.image_url,
+        amenities: room.amenities,
+        status: 'ACTIVE',
+      },
+    });
+    roomRows.push(roomRow);
+    for (let day = 0; day <= 120; day += 1) {
+      const date = dateOffset(day);
+      await models.RoomAvailability.findOrCreate({
+        where: { room_id: roomRow.id, date },
+        defaults: { room_id: roomRow.id, date, total_units: room.total_units, reserved_units: 0, is_blocked: false },
+      });
+    }
+  }
+  return roomRows;
+}
+
 module.exports = {
   async up() {
     // --- approved hotel owner -------------------------------------------------
@@ -95,7 +377,7 @@ module.exports = {
       userId: hotelOwner.id,
       type: 'HOTEL',
       businessName: 'Rahman Hospitality',
-      description: 'Beachfront hospitality group operating in Cox’s Bazar since 2012.',
+      description: 'Beach, hill and haor hospitality group operating across Bangladesh since 2012.',
       phone: '01711112222',
       address: 'Kolatoli, Cox’s Bazar',
     });
@@ -122,31 +404,31 @@ module.exports = {
       },
     });
 
-    const rooms = [];
-    for (const room of HOTEL.rooms) {
-      const [roomRow] = await models.HotelRoom.findOrCreate({
-        where: { hotel_id: hotel.id, name: room.name },
+    const rooms = await seedRooms(hotel, HOTEL.rooms);
+
+    for (const property of DESTINATION_HOTELS) {
+      const destination = await models.Destination.findOne({ where: { slug: property.destination } });
+      const [destinationHotel] = await models.Hotel.findOrCreate({
+        where: { slug: property.slug },
         defaults: {
-          hotel_id: hotel.id,
-          name: room.name,
-          room_type: room.room_type,
-          capacity_adults: room.capacity_adults,
-          capacity_children: room.capacity_children,
-          base_price: room.base_price,
-          total_units: room.total_units,
-          image_url: room.image_url,
-          amenities: room.amenities,
-          status: 'ACTIVE',
+          provider_profile_id: hotelProvider.id,
+          destination_id: destination?.id || null,
+          name: property.name,
+          slug: property.slug,
+          description: property.description,
+          star_rating: property.star_rating,
+          address: property.address,
+          phone: property.phone,
+          email: `reservations@${property.slug}.pothik.test`,
+          image_url: property.image_url,
+          gallery: [property.image_url],
+          facilities: property.facilities,
+          status: 'PUBLISHED',
+          rating_avg: property.rating_avg,
+          rating_count: property.rating_count,
         },
       });
-      rooms.push(roomRow);
-      for (let day = 0; day <= 120; day += 1) {
-        const date = dateOffset(day);
-        await models.RoomAvailability.findOrCreate({
-          where: { room_id: roomRow.id, date },
-          defaults: { room_id: roomRow.id, date, total_units: room.total_units, reserved_units: 0, is_blocked: false },
-        });
-      }
+      rooms.push(...(await seedRooms(destinationHotel, property.rooms)));
     }
 
     // --- approved transport provider -----------------------------------------
@@ -307,7 +589,7 @@ module.exports = {
     });
 
     console.log(
-      `  providers: hotel(rooms=${rooms.length}), transport(vehicles=${VEHICLES.length}), guide, pending=2`
+      `  providers: hotels=${DESTINATION_HOTELS.length + 1}(rooms=${rooms.length}), transport(vehicles=${VEHICLES.length}), guide, pending=2`
     );
   },
 };
