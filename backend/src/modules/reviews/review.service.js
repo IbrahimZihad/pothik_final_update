@@ -4,7 +4,6 @@ const { Op } = require('sequelize');
 const { models } = require('../../models');
 const { NotFoundError, BusinessRuleError, ForbiddenError } = require('../../shared/errors');
 const { getPagination, buildMeta } = require('../../shared/utils/pagination');
-const { invalidateCatalogCache } = require('../catalog/catalog.service');
 
 const TARGET_MODELS = {
   PACKAGE: 'Package',
@@ -170,7 +169,11 @@ async function refreshTargetRating(targetType, targetId) {
   const avg = aggregate?.avg ? Number(Number(aggregate.avg).toFixed(2)) : 0;
   const count = Number(aggregate?.count || 0);
   await models[modelName].update({ rating_avg: avg, rating_count: count }, { where: { id: targetId } });
-  if (['PACKAGE', 'DESTINATION'].includes(targetType)) await invalidateCatalogCache();
+  if (['PACKAGE', 'DESTINATION'].includes(targetType)) {
+    // Lazy require: catalog.service depends on ratingsSummary from this module.
+    const { invalidateCatalogCache } = require('../catalog/catalog.service');
+    await invalidateCatalogCache();
+  }
 }
 
 async function providerReply(user, reviewId, { reply }) {
