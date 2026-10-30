@@ -10,6 +10,7 @@ const DETAIL_INCLUDE = [
   { model: models.Payment, as: 'payments', attributes: ['id', 'provider', 'amount', 'currency', 'method', 'status', 'paid_at', 'created_at'] },
   { model: models.Coupon, as: 'coupon', attributes: ['id', 'code', 'description', 'type', 'value'], required: false },
   { model: models.CustomTrip, as: 'customTrip', attributes: ['id', 'title', 'status'], required: false },
+  { model: models.User, as: 'customer', attributes: ['id', 'name', 'email', 'phone'], required: false },
 ];
 
 async function findByReference(reference, { transaction, lock = false } = {}) {

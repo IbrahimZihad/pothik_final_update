@@ -13,7 +13,7 @@ import { StatusBadge } from '../../components/ui/Badge';
 import { PageLoader } from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import { useToast } from '../../components/ToastProvider';
-import { formatCurrency, formatDate } from '../../lib/format';
+import { formatCurrency, formatDate, humanize } from '../../lib/format';
 
 export default function ProviderFinance() {
   const toast = useToast();
@@ -122,7 +122,7 @@ export default function ProviderFinance() {
                         <td className="table-cell font-mono text-xs">{row.bookingId || '—'}</td>
                         <td className="table-cell">
                           <p className="font-medium text-slate-800">{row.title}</p>
-                          <p className="text-[11px] text-slate-500">{row.itemType?.toLowerCase()}</p>
+                          <p className="text-[11px] text-slate-500">{humanize(row.itemType)}</p>
                         </td>
                         <td className="table-cell">{formatCurrency(row.grossAmount)}</td>
                         <td className="table-cell">{Number(row.rate).toFixed(1)}%</td>

@@ -64,11 +64,12 @@ async function listUsers(query) {
     ];
   }
 
-  const roleWhere = query.role ? { where: { code: query.role }, attributes: [], required: true } : { attributes: [] };
+  const roleInclude = { model: models.Role, as: 'roles', attributes: ['code'] };
+  if (query.role) Object.assign(roleInclude, { where: { code: query.role }, required: true });
   const { rows, count } = await models.User.findAndCountAll({
     where,
     include: [
-      { model: models.Role, as: 'roles', ...roleWhere },
+      roleInclude,
       { model: models.ProviderProfile, as: 'providerProfile', attributes: ['id', 'type', 'status', 'business_name'], required: false },
     ],
     order: [['id', 'DESC']],

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
   BadgePercent,
@@ -94,11 +94,17 @@ export default function DashboardLayout() {
   const auth = useAuth();
   const { t, lang, setLang } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
+
+  async function signOut() {
+    await auth.logout();
+    navigate('/login', { replace: true });
+  }
 
   const groups = useNavFor(auth);
   const roleLabel = auth.isAdmin ? 'Administrator' : auth.isProvider ? t(`auth.${roleKey(auth.providerType)}`) : t('auth.customer');
@@ -143,7 +149,7 @@ export default function DashboardLayout() {
         </Link>
         <button
           type="button"
-          onClick={() => auth.logout()}
+          onClick={signOut}
           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
         >
           <LogOut className="h-4 w-4" /> {t('common.signOut')}
@@ -202,7 +208,7 @@ export default function DashboardLayout() {
             </span>
             <button
               type="button"
-              onClick={() => auth.logout()}
+              onClick={signOut}
               className="rounded-lg p-2 text-slate-600 hover:bg-rose-50 hover:text-rose-600 lg:hidden"
               aria-label={t('common.signOut')}
             >
