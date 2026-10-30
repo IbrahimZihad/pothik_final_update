@@ -13,7 +13,7 @@ const hotelListQuery = paginationQuery.extend({
   stars: z.coerce.number().int().min(1).max(5).optional(),
   minPrice: z.coerce.number().nonnegative().optional(),
   maxPrice: z.coerce.number().nonnegative().optional(),
-  sort: z.enum(['rating', 'price_asc', 'price_desc', 'name']).optional(),
+  sort: z.enum(['newest', 'rating', 'price_asc', 'price_desc', 'name']).optional(),
 });
 
 const hotelAvailabilityQuery = z.object({
@@ -25,7 +25,7 @@ const hotelAvailabilityQuery = z.object({
 const vehicleListQuery = paginationQuery.extend({
   category: z.string().trim().max(40).optional(),
   minCapacity: z.coerce.number().int().positive().max(100).optional(),
-  sort: z.enum(['rating', 'price_asc', 'price_desc', 'capacity']).optional(),
+  sort: z.enum(['newest', 'rating', 'price_asc', 'price_desc', 'capacity']).optional(),
 });
 
 const guideListQuery = paginationQuery.extend({
@@ -33,7 +33,7 @@ const guideListQuery = paginationQuery.extend({
   location: z.string().trim().max(80).optional(),
   expertise: z.string().trim().max(60).optional(),
   minRating: z.coerce.number().min(0).max(5).optional(),
-  sort: z.enum(['rating', 'rate_asc', 'rate_desc', 'experience']).optional(),
+  sort: z.enum(['newest', 'rating', 'rate_asc', 'rate_desc', 'experience']).optional(),
 });
 
 const providerAvailabilityQuery = z.object({

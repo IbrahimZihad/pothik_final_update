@@ -69,6 +69,7 @@ Base URL: `/api/v1` (configurable with `API_PREFIX`). Interactive docs: `/api-do
 | GET | `/vehicle-categories` | Category metadata |
 | GET | `/guides`, `/guides/:id`, `/guides/:id/availability` | Guide catalogue |
 | GET | `/reviews` | Approved reviews (filters: target, rating, pagination) |
+| GET | `/reviews/summary?targetType=&targetId=` | Approved review count and average for one target |
 
 ## Custom trip builder (`/trips`)
 

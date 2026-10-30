@@ -11,6 +11,7 @@ import ReviewList from '../components/site/ReviewList';
 import { PackageCard } from '../components/site/Cards';
 import { formatCurrency, formatDate } from '../lib/format';
 import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
+import useTargetReviews from '../lib/useTargetReviews';
 
 export default function DestinationDetail() {
   const { slug } = useParams();
@@ -18,6 +19,7 @@ export default function DestinationDetail() {
     queryKey: ['destination', slug],
     queryFn: () => readData(api.get(`/destinations/${slug}`)),
   });
+  const reviews = useTargetReviews('DESTINATION', data?.id);
 
   useSeo({
     title: data?.name,
@@ -161,7 +163,7 @@ export default function DestinationDetail() {
             </section>
           )}
 
-          <ReviewList summary={data.reviews} />
+          <ReviewList summary={reviews.summary} meta={reviews.meta} onPageChange={reviews.changePage} />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

@@ -11,10 +11,12 @@ import Badge from '../components/ui/Badge';
 import Rating from '../components/ui/Rating';
 import SmartImage from '../components/ui/SmartImage';
 import { Input } from '../components/ui/Field';
+import Slider from '../components/ui/Slider';
 import ReviewList from '../components/site/ReviewList';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { addDaysISO, formatCurrency, formatDate, nightsBetween, todayISO } from '../lib/format';
 import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
+import useTargetReviews from '../lib/useTargetReviews';
 
 const FACILITY_ICONS = { wifi: Wifi, breakfast: Utensils, restaurant: Utensils };
 
@@ -71,11 +73,7 @@ export default function HotelDetail() {
   });
 
   const hotelId = hotel.data?.id;
-  const reviews = useQuery({
-    queryKey: ['hotel', slug, 'reviews'],
-    queryFn: () => readData(api.get('/reviews', { params: { targetType: 'HOTEL', targetId: hotelId, limit: 6 } })),
-    enabled: Boolean(hotelId),
-  });
+  const reviews = useTargetReviews('HOTEL', hotelId);
 
   const nights = nightsBetween(stay.checkIn, stay.checkOut);
   const availability = useQuery({
@@ -98,22 +96,6 @@ export default function HotelDetail() {
       };
     });
   }, [hotel.data, availability.data, nights]);
-
-  const reviewSummary = useMemo(() => {
-    const rows = reviews.data?.items || [];
-    const approved = rows.map((row) => ({
-      id: row.id,
-      rating: row.rating,
-      title: row.title,
-      comment: row.comment,
-      createdAt: row.created_at,
-      verified: row.is_verified,
-      providerReply: row.provider_reply,
-      user: row.user ? { id: row.user.id, name: row.user.name } : null,
-    }));
-    const average = approved.length ? approved.reduce((sum, row) => sum + row.rating, 0) / approved.length : 0;
-    return { average: Number(average.toFixed(2)), total: reviews.data?.meta?.total || approved.length, items: approved };
-  }, [reviews.data]);
 
   if (hotel.isLoading) return <PageLoader label="Loading hotel…" />;
   if (hotel.isError || !hotel.data) {
@@ -317,14 +299,21 @@ export default function HotelDetail() {
           </section>
 
           {data.gallery?.length > 0 && (
-            <section className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {data.gallery.slice(0, 6).map((image) => (
-                <SmartImage key={image} src={image} alt={data.name} wrapperClassName="h-36 w-full rounded-xl" className="h-36 w-full rounded-xl object-cover" />
-              ))}
+            <section className="card p-6">
+              <h2 className="text-lg font-bold text-ink-900">Photos</h2>
+              <Slider
+                label="Hotel photos"
+                className="mt-4"
+                itemClassName="w-[70%] shrink-0 snap-start sm:w-[44%] lg:w-[31.5%]"
+              >
+                {data.gallery.map((image) => (
+                  <SmartImage key={image} src={image} alt={data.name} wrapperClassName="h-40 w-full rounded-xl" className="h-40 w-full rounded-xl object-cover" />
+                ))}
+              </Slider>
             </section>
           )}
 
-          <ReviewList summary={reviewSummary} title={`Reviews for ${data.name}`} />
+          <ReviewList summary={reviews.summary} meta={reviews.meta} onPageChange={reviews.changePage} title={`Reviews for ${data.name}`} />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

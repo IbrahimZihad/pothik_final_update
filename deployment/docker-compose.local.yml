@@ -1,13 +1,13 @@
 services:
   api-1:
-    image: ibrahim12zihad/pothik-api:1.0.1
+    image: ibrahim12zihad/pothik-api:1.0.2
   api-2:
-    image: ibrahim12zihad/pothik-api:1.0.1
+    image: ibrahim12zihad/pothik-api:1.0.2
   worker:
-    image: ibrahim12zihad/pothik-api:1.0.1
+    image: ibrahim12zihad/pothik-api:1.0.2
   migrate:
-    image: ibrahim12zihad/pothik-api:1.0.1
+    image: ibrahim12zihad/pothik-api:1.0.2
   seed:
-    image: ibrahim12zihad/pothik-api:1.0.1
+    image: ibrahim12zihad/pothik-api:1.0.2
   frontend:
-    image: ibrahim12zihad/pothik-web:1.0.1
+    image: ibrahim12zihad/pothik-web:1.0.2

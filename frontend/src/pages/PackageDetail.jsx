@@ -14,6 +14,7 @@ import ReviewList from '../components/site/ReviewList';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { formatCurrency, formatDateRange, todayISO } from '../lib/format';
 import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
+import useTargetReviews from '../lib/useTargetReviews';
 
 export default function PackageDetail() {
   const { slug } = useParams();
@@ -29,6 +30,7 @@ export default function PackageDetail() {
   });
 
   const packagePrice = Number(data?.pricePerPerson) || 0;
+  const reviews = useTargetReviews('PACKAGE', data?.id);
 
   useSeo({
     title: data?.title,
@@ -235,7 +237,7 @@ export default function PackageDetail() {
             )}
           </section>
 
-          <ReviewList summary={data.reviews} title={`Reviews for ${data.title}`} />
+          <ReviewList summary={reviews.summary} meta={reviews.meta} onPageChange={reviews.changePage} title={`Reviews for ${data.title}`} />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

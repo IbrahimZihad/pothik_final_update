@@ -26,12 +26,28 @@ const listSchema = paginationQuery.extend({
 
 const replySchema = z.object({ reply: z.string().trim().min(2).max(3000) });
 
+const summarySchema = z.object({
+  targetType: z.enum(['HOTEL', 'GUIDE', 'TRANSPORT', 'PACKAGE', 'DESTINATION']),
+  targetId: z.coerce.number().int().positive(),
+});
+
 const router = express.Router();
 
 router.get(
   '/',
   validate({ query: listSchema }),
   asyncHandler(async (req, res) => success(res, { message: 'Reviews retrieved', data: await service.listReviews(req.validatedQuery) }))
+);
+
+router.get(
+  '/summary',
+  validate({ query: summarySchema }),
+  asyncHandler(async (req, res) =>
+    success(res, {
+      message: 'Review summary retrieved',
+      data: await service.reviewSummary(req.validatedQuery.targetType, req.validatedQuery.targetId),
+    })
+  )
 );
 
 router.post(

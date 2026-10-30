@@ -151,6 +151,20 @@ services:
   worker:
     <<: *api-service
     command: ["node", "src/infrastructure/jobs/worker.js"]
+    # The image healthcheck probes the API HTTP port, which the queue worker
+    # never opens. Probe the Redis connection the worker actually depends on.
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const net=require('net');const u=new URL(process.env.REDIS_URL||'redis://redis:6379');const s=net.connect(Number(u.port||6379),u.hostname,()=>{s.end();process.exit(0)});s.setTimeout(3000,()=>process.exit(1));s.on('error',()=>process.exit(1));",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   frontend:
     build:

@@ -52,7 +52,7 @@ async function listForCustomer(userId, { status, limit, offset }) {
   return models.Booking.findAndCountAll({
     where,
     include: [{ model: models.BookingItem, as: 'items', attributes: ['id', 'item_type', 'title', 'total_price', 'status'] }],
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
     limit,
     offset,
     distinct: true,
@@ -68,7 +68,7 @@ async function listForProvider(providerProfileId, { status, limit, offset }) {
       { model: models.BookingItem, as: 'items', where: { provider_profile_id: providerProfileId }, required: true },
       { model: models.User, as: 'customer', attributes: ['id', 'name', 'email', 'phone'] },
     ],
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
     limit,
     offset,
     distinct: true,
@@ -85,7 +85,7 @@ async function listAll({ status, type, search, from, to, limit, offset }) {
   return models.Booking.findAndCountAll({
     where,
     include: [{ model: models.User, as: 'customer', attributes: ['id', 'name', 'email', 'phone'] }],
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
     limit,
     offset,
   });

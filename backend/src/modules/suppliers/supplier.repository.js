@@ -54,6 +54,7 @@ async function listHotels({ destinationSlug, stars, minPrice, maxPrice, search, 
 
   const minPriceSql = literal(`(SELECT MIN(hr.base_price) FROM hotel_rooms hr WHERE hr.hotel_id = Hotel.id AND hr.status = 'ACTIVE')`);
   const orderMap = {
+    newest: [['created_at', 'DESC'], ['id', 'DESC']],
     price_asc: [[minPriceSql, 'ASC']],
     price_desc: [[minPriceSql, 'DESC']],
     rating: [['rating_avg', 'DESC'], ['rating_count', 'DESC']],
@@ -64,7 +65,7 @@ async function listHotels({ destinationSlug, stars, minPrice, maxPrice, search, 
     where,
     include,
     replacements,
-    order: orderMap[sort] || orderMap.rating,
+    order: orderMap[sort] || orderMap.newest,
     limit,
     offset,
     distinct: true,
@@ -129,6 +130,7 @@ async function listVehicles({ categoryCode, minCapacity, search, sort, limit, of
   if (categoryCode) include[1].where = { code: categoryCode };
 
   const orderMap = {
+    newest: [['created_at', 'DESC'], ['id', 'DESC']],
     price_asc: [['price_per_day', 'ASC']],
     price_desc: [['price_per_day', 'DESC']],
     capacity: [['capacity', 'DESC']],
@@ -138,7 +140,7 @@ async function listVehicles({ categoryCode, minCapacity, search, sort, limit, of
   const { rows, count } = await models.Vehicle.findAndCountAll({
     where,
     include,
-    order: orderMap[sort] || orderMap.rating,
+    order: orderMap[sort] || orderMap.newest,
     limit,
     offset,
     distinct: true,
@@ -181,6 +183,7 @@ async function listGuides({ language, location, expertise, minRating, search, so
   if (restrictions.length) where[Op.and] = restrictions;
 
   const orderMap = {
+    newest: [['created_at', 'DESC'], ['id', 'DESC']],
     rate_asc: [['daily_rate', 'ASC']],
     rate_desc: [['daily_rate', 'DESC']],
     rating: [['rating_avg', 'DESC'], ['rating_count', 'DESC']],
@@ -191,7 +194,7 @@ async function listGuides({ language, location, expertise, minRating, search, so
     where,
     include: [PROVIDER_PUBLIC_LIST],
     replacements,
-    order: orderMap[sort] || orderMap.experience,
+    order: orderMap[sort] || orderMap.newest,
     limit,
     offset,
     distinct: true,
@@ -279,7 +282,7 @@ async function listOwnHotels(providerProfileId) {
       { model: models.Destination, as: 'destination' },
       { model: models.HotelRoom, as: 'rooms', separate: true, order: [['id', 'ASC']] },
     ],
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
   });
 }
 
@@ -306,7 +309,7 @@ async function listOwnVehicles(providerProfileId) {
   return models.Vehicle.findAll({
     where: { provider_profile_id: providerProfileId },
     include: [{ model: models.VehicleCategory, as: 'category', attributes: ['id', 'code', 'name'] }],
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
   });
 }
 
@@ -318,7 +321,7 @@ async function listOwnDrivers(providerProfileId) {
   return models.Driver.findAll({
     where: { provider_profile_id: providerProfileId },
     include: [{ model: models.Vehicle, as: 'vehicle', attributes: ['id', 'name', 'registration_no'] }],
-    order: [['created_at', 'ASC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
   });
 }
 
@@ -333,7 +336,7 @@ async function findOwnGuide(providerProfileId) {
 async function listDocuments(providerProfileId) {
   return models.ProviderDocument.findAll({
     where: { provider_profile_id: providerProfileId },
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
   });
 }
 

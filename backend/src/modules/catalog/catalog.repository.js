@@ -3,7 +3,7 @@
 const { Op } = require('sequelize');
 const { models } = require('../../models');
 
-async function listDestinations({ districtId, divisionId, categorySlug, featured, search, limit, offset, sort = 'popular' }) {
+async function listDestinations({ districtId, divisionId, categorySlug, featured, search, limit, offset, sort }) {
   const where = { status: 'PUBLISHED' };
   if (districtId) where.district_id = districtId;
   if (featured !== undefined) where.is_featured = featured;
@@ -30,10 +30,12 @@ async function listDestinations({ districtId, divisionId, categorySlug, featured
 
   const order =
     sort === 'rating'
-      ? [['rating_avg', 'DESC']]
+      ? [['rating_avg', 'DESC'], ['rating_count', 'DESC']]
       : sort === 'name'
         ? [['name', 'ASC']]
-        : [['is_featured', 'DESC'], ['rating_count', 'DESC']];
+        : sort === 'popular'
+          ? [['is_featured', 'DESC'], ['rating_count', 'DESC']]
+          : [['created_at', 'DESC'], ['id', 'DESC']];
 
   const { rows, count } = await models.Destination.findAndCountAll({
     where,
@@ -92,14 +94,14 @@ async function listPackages({ destinationSlug, minPrice, maxPrice, minDays, maxD
     price_asc: [['base_price_per_person', 'ASC']],
     price_desc: [['base_price_per_person', 'DESC']],
     duration: [['duration_days', 'ASC']],
-    newest: [['created_at', 'DESC']],
+    newest: [['created_at', 'DESC'], ['id', 'DESC']],
     popular: [['rating_count', 'DESC'], ['rating_avg', 'DESC']],
   };
 
   const { rows, count } = await models.Package.findAndCountAll({
     where,
     include,
-    order: orderMap[sort] || orderMap.popular,
+    order: orderMap[sort] || orderMap.newest,
     limit,
     offset,
     distinct: true,
@@ -156,22 +158,26 @@ async function searchAll(term, limitPerType = 5) {
     models.Destination.findAll({
       where: { status: 'PUBLISHED', [Op.or]: [{ name: like }, { summary: like }] },
       attributes: ['id', 'name', 'slug', 'cover_image', 'summary', 'rating_avg'],
+      order: [['created_at', 'DESC'], ['id', 'DESC']],
       limit: limitPerType,
     }),
     models.Package.findAll({
       where: { status: 'PUBLISHED', [Op.or]: [{ title: like }, { summary: like }] },
       attributes: ['id', 'title', 'slug', 'cover_image', 'summary', 'base_price_per_person', 'duration_days'],
+      order: [['created_at', 'DESC'], ['id', 'DESC']],
       limit: limitPerType,
     }),
     models.Hotel.findAll({
       where: { status: 'PUBLISHED', [Op.or]: [{ name: like }, { address: like }] },
       attributes: ['id', 'name', 'slug', 'image_url', 'address', 'star_rating', 'rating_avg'],
+      order: [['created_at', 'DESC'], ['id', 'DESC']],
       limit: limitPerType,
     }),
     models.Guide.findAll({
       where: { status: 'ACTIVE', [Op.or]: [{ bio: like }] },
       attributes: ['id', 'bio', 'daily_rate', 'photo_url', 'rating_avg', 'languages', 'service_locations'],
       include: [{ model: models.ProviderProfile, as: 'provider', attributes: ['business_name'], where: { status: 'APPROVED' } }],
+      order: [['created_at', 'DESC'], ['id', 'DESC']],
       limit: limitPerType,
     }),
   ]);

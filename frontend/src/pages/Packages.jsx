@@ -14,15 +14,15 @@ const DESCRIPTION =
   'Curated multi-day trips with scheduled departures, clear inclusions and seats held in real time.';
 
 const SORTS = [
+  { value: 'newest', label: 'Newest first' },
   { value: 'popular', label: 'Most popular' },
   { value: 'price_asc', label: 'Price: low to high' },
   { value: 'price_desc', label: 'Price: high to low' },
   { value: 'duration', label: 'Shortest first' },
-  { value: 'newest', label: 'Newest' },
 ];
 
 export default function Packages() {
-  const [filters, setFilters] = useState({ destination: '', minPrice: '', maxPrice: '', maxDays: '', sort: 'popular', search: '', page: 1 });
+  const [filters, setFilters] = useState({ destination: '', minPrice: '', maxPrice: '', maxDays: '', sort: 'newest', search: '', page: 1 });
   const [term, setTerm] = useState('');
   useSeo({
     title: 'Tour packages in Bangladesh',
@@ -166,7 +166,7 @@ export default function Packages() {
               className="mt-5 w-full"
               onClick={() => {
                 setTerm('');
-                setFilters({ destination: '', minPrice: '', maxPrice: '', maxDays: '', sort: 'popular', search: '', page: 1 });
+                setFilters({ destination: '', minPrice: '', maxPrice: '', maxDays: '', sort: 'newest', search: '', page: 1 });
               }}
             >
               Clear filters

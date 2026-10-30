@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, BadgeCheck, CalendarDays, Clock, Compass, Languages, MapPin, Sparkles } from 'lucide-react';
@@ -15,6 +15,7 @@ import ReviewList from '../components/site/ReviewList';
 import ContactBookingModal from '../components/booking/ContactBookingModal';
 import { addDaysISO, formatCurrency, formatDate, formatDateRange, daysBetween, initials, todayISO } from '../lib/format';
 import { absoluteUrl, breadcrumb, graph, truncate, useSeo } from '../lib/seo';
+import useTargetReviews from '../lib/useTargetReviews';
 
 export default function GuideDetail() {
   const { id } = useParams();
@@ -82,26 +83,7 @@ export default function GuideDetail() {
     enabled: Boolean(id) && validRange,
   });
 
-  const reviews = useQuery({
-    queryKey: ['guide', id, 'reviews'],
-    queryFn: () => readData(api.get('/reviews', { params: { targetType: 'GUIDE', targetId: id, limit: 6 } })),
-    enabled: Boolean(id),
-  });
-
-  const reviewSummary = useMemo(() => {
-    const rows = (reviews.data?.items || []).map((row) => ({
-      id: row.id,
-      rating: row.rating,
-      title: row.title,
-      comment: row.comment,
-      createdAt: row.created_at,
-      verified: row.is_verified,
-      providerReply: row.provider_reply,
-      user: row.user ? { id: row.user.id, name: row.user.name } : null,
-    }));
-    const average = rows.length ? rows.reduce((sum, row) => sum + row.rating, 0) / rows.length : 0;
-    return { average: Number(average.toFixed(2)), total: reviews.data?.meta?.total || rows.length, items: rows };
-  }, [reviews.data]);
+  const reviews = useTargetReviews('GUIDE', guide.data?.id || id);
 
   if (guide.isLoading) return <PageLoader label="Loading guide…" />;
   if (guide.isError || !guide.data) {
@@ -262,7 +244,7 @@ export default function GuideDetail() {
             </div>
           </section>
 
-          <ReviewList summary={reviewSummary} title={`Reviews for ${name}`} />
+          <ReviewList summary={reviews.summary} meta={reviews.meta} onPageChange={reviews.changePage} title={`Reviews for ${name}`} />
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

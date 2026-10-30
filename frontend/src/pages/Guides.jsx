@@ -15,7 +15,7 @@ const DESCRIPTION =
   'Approved guides set their languages, expertise and daily rate. Check their calendar before booking so your dates are held correctly.';
 
 export default function Guides() {
-  const [filters, setFilters] = useState({ language: '', location: '', sort: 'rating', page: 1 });
+  const [filters, setFilters] = useState({ language: '', location: '', sort: 'newest', page: 1 });
   useSeo({
     title: 'Local tour guides in Bangladesh',
     description: DESCRIPTION,
@@ -87,6 +87,7 @@ export default function Guides() {
             <label className="mt-4 block">
               <span className="label">Sort</span>
               <select className="input" value={filters.sort} onChange={(event) => update({ sort: event.target.value })}>
+                <option value="newest">Newest first</option>
                 <option value="rating">Highest rated</option>
                 <option value="experience">Most experienced</option>
                 <option value="rate_asc">Daily rate: low to high</option>
@@ -98,7 +99,7 @@ export default function Guides() {
               variant="outline"
               size="sm"
               className="mt-5 w-full"
-              onClick={() => setFilters({ language: '', location: '', sort: 'rating', page: 1 })}
+              onClick={() => setFilters({ language: '', location: '', sort: 'newest', page: 1 })}
             >
               Clear filters
             </Button>

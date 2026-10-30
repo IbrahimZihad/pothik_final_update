@@ -9,25 +9,26 @@ import { todayISO, addDaysISO } from '../lib/format';
 import Button from '../components/ui/Button';
 import SectionHeading from '../components/ui/SectionHeading';
 import { DestinationCard, HotelCard, PackageCard } from '../components/site/Cards';
+import Slider from '../components/ui/Slider';
 import { CardSkeleton } from '../components/ui/Skeleton';
 
 function useHomeData() {
   return {
     destinations: useQuery({
       queryKey: ['home', 'destinations'],
-      queryFn: () => readData(api.get('/destinations', { params: { featured: 'true', limit: 6 } })),
+      queryFn: () => readData(api.get('/destinations', { params: { featured: 'true', limit: 10 } })),
     }),
     packages: useQuery({
       queryKey: ['home', 'packages'],
-      queryFn: () => readData(api.get('/packages', { params: { featured: 'true', limit: 3, sort: 'popular' } })),
+      queryFn: () => readData(api.get('/packages', { params: { limit: 8 } })),
     }),
     hotels: useQuery({
       queryKey: ['home', 'hotels'],
-      queryFn: () => readData(api.get('/hotels', { params: { limit: 3, sort: 'rating' } })),
+      queryFn: () => readData(api.get('/hotels', { params: { limit: 8 } })),
     }),
     allDestinations: useQuery({
       queryKey: ['home', 'destination-options'],
-      queryFn: () => readData(api.get('/destinations', { params: { limit: 50, sort: 'popular' } })),
+      queryFn: () => readData(api.get('/destinations', { params: { limit: 50, sort: 'name' } })),
     }),
   };
 }
@@ -169,11 +170,11 @@ export default function Home() {
           {destinations.isLoading ? (
             <CardSkeleton count={6} />
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <Slider label="Featured destinations">
               {(destinations.data?.items || []).map((destination) => (
                 <DestinationCard key={destination.id} destination={destination} />
               ))}
-            </div>
+            </Slider>
           )}
         </div>
       </section>
@@ -191,11 +192,11 @@ export default function Home() {
             {packages.isLoading ? (
               <CardSkeleton count={3} />
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <Slider label="Latest packages">
                 {(packages.data?.items || []).map((pkg) => (
                   <PackageCard key={pkg.id} pkg={pkg} />
                 ))}
-              </div>
+              </Slider>
             )}
           </div>
         </div>
@@ -213,11 +214,11 @@ export default function Home() {
           {hotels.isLoading ? (
             <CardSkeleton count={3} />
           ) : (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <Slider label="Latest stays">
               {(hotels.data?.items || []).map((hotel) => (
                 <HotelCard key={hotel.id} hotel={hotel} />
               ))}
-            </div>
+            </Slider>
           )}
         </div>
       </section>

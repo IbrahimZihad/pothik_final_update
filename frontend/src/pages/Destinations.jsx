@@ -16,7 +16,7 @@ const DESCRIPTION =
 
 export default function Destinations() {
   const { t } = useLanguage();
-  const [filters, setFilters] = useState({ category: '', sort: 'popular', search: '', page: 1 });
+  const [filters, setFilters] = useState({ category: '', sort: 'newest', search: '', page: 1 });
   const [term, setTerm] = useState('');
   useSeo({
     title: 'Destinations in Bangladesh',
@@ -87,6 +87,7 @@ export default function Destinations() {
             onChange={(event) => update({ sort: event.target.value })}
             aria-label="Sort destinations"
           >
+            <option value="newest">Newest first</option>
             <option value="popular">Most popular</option>
             <option value="rating">Highest rated</option>
             <option value="name">Name A–Z</option>
@@ -138,7 +139,7 @@ export default function Destinations() {
               title="No destinations match those filters"
               description="Try a different landscape or clear your search."
               action={
-                <Button variant="outline" size="sm" onClick={() => { setTerm(''); setFilters({ category: '', sort: 'popular', search: '', page: 1 }); }}>
+                <Button variant="outline" size="sm" onClick={() => { setTerm(''); setFilters({ category: '', sort: 'newest', search: '', page: 1 }); }}>
                   Clear filters
                 </Button>
               }

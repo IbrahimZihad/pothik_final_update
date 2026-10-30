@@ -8,7 +8,7 @@ const destinationListQuery = paginationQuery.extend({
   divisionId: z.coerce.number().int().positive().optional(),
   category: z.string().max(60).optional(),
   featured: z.enum(['true', 'false']).optional(),
-  sort: z.enum(['popular', 'rating', 'name']).optional(),
+  sort: z.enum(['newest', 'popular', 'rating', 'name']).optional(),
 });
 
 const packageListQuery = paginationQuery.extend({

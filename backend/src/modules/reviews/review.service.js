@@ -20,7 +20,7 @@ async function ratingsSummary(targetType, targetId, { limit = 5 } = {}) {
     models.Review.findAll({
       where,
       include: [{ model: models.User, as: 'user', attributes: ['id', 'name', 'avatar_url'] }],
-      order: [['created_at', 'DESC']],
+      order: [['created_at', 'DESC'], ['id', 'DESC']],
       limit,
     }),
   ]);
@@ -44,6 +44,22 @@ async function ratingsSummary(targetType, targetId, { limit = 5 } = {}) {
       providerReply: review.provider_reply,
       user: review.user ? { id: review.user.id, name: review.user.name, avatar: review.user.avatar_url } : null,
     })),
+  };
+}
+
+async function reviewSummary(targetType, targetId) {
+  const where = { target_type: targetType, target_id: targetId, status: 'APPROVED' };
+  const [total, aggregate] = await Promise.all([
+    models.Review.count({ where }),
+    models.Review.findOne({
+      where,
+      attributes: [[models.Review.sequelize.fn('AVG', models.Review.sequelize.col('rating')), 'avg']],
+      raw: true,
+    }),
+  ]);
+  return {
+    average: aggregate?.avg ? Number(Number(aggregate.avg).toFixed(2)) : 0,
+    total,
   };
 }
 
@@ -133,7 +149,7 @@ async function listReviews(query) {
   const { rows, count } = await models.Review.findAndCountAll({
     where,
     include: [{ model: models.User, as: 'user', attributes: ['id', 'name', 'avatar_url'] }],
-    order: [['created_at', 'DESC']],
+    order: [['created_at', 'DESC'], ['id', 'DESC']],
     limit,
     offset,
   });
@@ -205,6 +221,7 @@ module.exports = {
   moderateReview,
   providerReply,
   ratingsSummary,
+  reviewSummary,
   refreshTargetRating,
   TARGET_MODELS,
 };

@@ -14,7 +14,7 @@ const DESCRIPTION =
   'Choose by group size and route. Prices are quoted per rental day and checked against driver availability before the booking is created.';
 
 export default function Vehicles() {
-  const [filters, setFilters] = useState({ category: '', minCapacity: '', sort: 'rating', page: 1 });
+  const [filters, setFilters] = useState({ category: '', minCapacity: '', sort: 'newest', page: 1 });
   useSeo({
     title: 'Transport and vehicle hire in Bangladesh',
     description: DESCRIPTION,
@@ -94,6 +94,7 @@ export default function Vehicles() {
             <label className="mt-4 block">
               <span className="label">Sort</span>
               <select className="input" value={filters.sort} onChange={(event) => update({ sort: event.target.value })}>
+                <option value="newest">Newest first</option>
                 <option value="rating">Highest rated</option>
                 <option value="price_asc">Price: low to high</option>
                 <option value="price_desc">Price: high to low</option>
@@ -105,7 +106,7 @@ export default function Vehicles() {
               variant="outline"
               size="sm"
               className="mt-5 w-full"
-              onClick={() => setFilters({ category: '', minCapacity: '', sort: 'rating', page: 1 })}
+              onClick={() => setFilters({ category: '', minCapacity: '', sort: 'newest', page: 1 })}
             >
               Clear filters
             </Button>

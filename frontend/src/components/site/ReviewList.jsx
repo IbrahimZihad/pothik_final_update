@@ -1,11 +1,12 @@
 import { BadgeCheck, MessageSquareQuote } from 'lucide-react';
 import Rating from '../ui/Rating';
+import Pagination from '../ui/Pagination';
 import { formatDate, initials } from '../../lib/format';
 
-export default function ReviewList({ summary, title = 'Traveller reviews' }) {
+export default function ReviewList({ summary, title = 'Traveller reviews', meta, onPageChange }) {
   const items = summary?.items || [];
   return (
-    <section className="card p-6">
+    <section id="reviews" className="card scroll-mt-24 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-ink-900">{title}</h2>
@@ -59,6 +60,8 @@ export default function ReviewList({ summary, title = 'Traveller reviews' }) {
           ))}
         </ul>
       )}
+
+      <Pagination meta={meta} onPageChange={onPageChange} className="mt-6 flex items-center justify-center gap-1.5" />
     </section>
   );
 }

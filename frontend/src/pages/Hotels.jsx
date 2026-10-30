@@ -14,7 +14,7 @@ const DESCRIPTION =
   'Every property is operated by an approved provider. Availability and nightly rates are checked against real reservations.';
 
 export default function Hotels() {
-  const [filters, setFilters] = useState({ destination: '', stars: '', minPrice: '', maxPrice: '', sort: 'rating', search: '', page: 1 });
+  const [filters, setFilters] = useState({ destination: '', stars: '', minPrice: '', maxPrice: '', sort: 'newest', search: '', page: 1 });
   const [term, setTerm] = useState('');
   useSeo({
     title: 'Hotels and stays in Bangladesh',
@@ -129,6 +129,7 @@ export default function Hotels() {
             <label className="mt-4 block">
               <span className="label">Sort</span>
               <select className="input" value={filters.sort} onChange={(event) => update({ sort: event.target.value })}>
+                <option value="newest">Newest first</option>
                 <option value="rating">Highest rated</option>
                 <option value="price_asc">Price: low to high</option>
                 <option value="price_desc">Price: high to low</option>
@@ -142,7 +143,7 @@ export default function Hotels() {
               className="mt-5 w-full"
               onClick={() => {
                 setTerm('');
-                setFilters({ destination: '', stars: '', minPrice: '', maxPrice: '', sort: 'rating', search: '', page: 1 });
+                setFilters({ destination: '', stars: '', minPrice: '', maxPrice: '', sort: 'newest', search: '', page: 1 });
               }}
             >
               Clear filters
