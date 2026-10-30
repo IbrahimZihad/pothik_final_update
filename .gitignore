@@ -18,3 +18,5 @@ frontend/playwright-report/
 Thumbs.db
 .idea/
 .vscode/
+
+deployment/backups/
