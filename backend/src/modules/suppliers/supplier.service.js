@@ -886,7 +886,9 @@ async function getGuideProfile(user) {
 async function upsertGuideProfile(user, payload) {
   const profile = assertProvider(user, 'GUIDE');
   let guide = await repository.findOwnGuide(profile.id);
-  const status = statusFor(profile, payload.status, { published: 'ACTIVE', fallback: 'PENDING_REVIEW' });
+  const status = payload.status
+    ? statusFor(profile, payload.status, { published: 'ACTIVE', fallback: 'PENDING_REVIEW' })
+    : guide?.status || 'PENDING_REVIEW';
   const data = {
     bio: payload.bio,
     languages: payload.languages || [],

@@ -201,6 +201,8 @@ async function priceVehicle({ vehicleId, startDate, endDate, distanceKm }, compo
   const days = enumerateDates(startDate, endDate);
   if (endDate < startDate) throw new BusinessRuleError('End date cannot be before the start date', 'INVALID_DATE_RANGE');
   if (days.length > MAX_SERVICE_DAYS) throw new BusinessRuleError(`Transport can be booked for up to ${MAX_SERVICE_DAYS} days`, 'RANGE_TOO_LONG');
+  // Rental days follow hotel-night convention: pickup on the start date, return on the end date.
+  const rentalDays = Math.max(1, days.length - 1);
 
   const travellers = assertTravellers(composition);
   if (Number(vehicle.capacity) < travellers) {
@@ -219,9 +221,9 @@ async function priceVehicle({ vehicleId, startDate, endDate, distanceKm }, compo
   const usingDistance = vehicle.price_per_km && distanceKm;
   if (usingDistance) {
     total = money(vehicle.price_per_km).times(distanceKm);
-    if (vehicle.price_per_day) total = total.plus(money(vehicle.price_per_day).times(days.length));
+    if (vehicle.price_per_day) total = total.plus(money(vehicle.price_per_day).times(rentalDays));
   } else if (vehicle.price_per_day) {
-    total = money(vehicle.price_per_day).times(days.length);
+    total = money(vehicle.price_per_day).times(rentalDays);
   } else if (vehicle.price_per_km) {
     throw new BusinessRuleError('This vehicle is priced per kilometre - enter the estimated distance', 'DISTANCE_REQUIRED');
   } else {
@@ -233,13 +235,13 @@ async function priceVehicle({ vehicleId, startDate, endDate, distanceKm }, compo
       itemType: 'VEHICLE',
       refId: vehicle.id,
       providerProfileId: vehicle.provider_profile_id,
-      title: `${vehicle.name} (${days.length} day${days.length > 1 ? 's' : ''})`,
+      title: `${vehicle.name} (${rentalDays} day${rentalDays > 1 ? 's' : ''})`,
       startDate,
       endDate,
       quantity: 1,
       unitPrice: total,
       totalPrice: total,
-      meta: { days: days.length, distanceKm: distanceKm || null, category: vehicle.category?.code || null },
+      meta: { days: rentalDays, distanceKm: distanceKm || null, category: vehicle.category?.code || null },
     }),
   ];
 }

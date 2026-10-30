@@ -1,7 +1,7 @@
 'use strict';
 
-const config = require('../../../config');
-const logger = require('../../../config/logger');
+const config = require('../../config');
+const logger = require('../../config/logger');
 const { BusinessRuleError } = require('../../shared/errors');
 
 /**

@@ -8,7 +8,7 @@ const { models } = require('../../models');
  * transitionBooking() so no code path can set an arbitrary status directly.
  */
 const TRANSITIONS = {
-  PENDING: ['AWAITING_CONFIRMATION', 'CANCELLED', 'REJECTED'],
+  PENDING: ['AWAITING_CONFIRMATION', 'AWAITING_PAYMENT', 'CANCELLED', 'REJECTED'],
   AWAITING_CONFIRMATION: ['QUOTED', 'AWAITING_PAYMENT', 'REJECTED', 'CANCELLED'],
   QUOTED: ['AWAITING_PAYMENT', 'REJECTED', 'CANCELLED'],
   AWAITING_PAYMENT: ['CONFIRMED', 'REJECTED', 'CANCELLED'],

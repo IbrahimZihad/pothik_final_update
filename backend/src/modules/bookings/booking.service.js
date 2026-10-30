@@ -11,6 +11,8 @@ const { generateBookingReference } = require('../../shared/utils/bookingReferenc
 const { enumerateDates, addDays, isPast } = require('../../shared/utils/dates');
 const { getPagination, buildMeta } = require('../../shared/utils/pagination');
 const { ROLES } = require('../../shared/constants/roles');
+const notifications = require('../notifications/notification.service');
+const logger = require('../../config/logger');
 
 // ------------------------------------------------------------------ helpers
 
@@ -337,7 +339,7 @@ async function createBooking(user, payload) {
     : payload.composition;
   if (!composition) throw new BusinessRuleError('A trip composition is required', 'COMPOSITION_REQUIRED');
 
-  return sequelize.transaction(async (transaction) => {
+  const outcome = await sequelize.transaction(async (transaction) => {
     const quote = await pricing.buildQuote({
       type: payload.type,
       composition,
@@ -481,15 +483,35 @@ async function createBooking(user, payload) {
       await trip.update({ status: 'CONFIRMED', estimated_total: quote.totalAmount }, { transaction });
     }
 
-    await transitionBooking(booking, 'AWAITING_CONFIRMATION', {
+    const needsProviderConfirmation = items.some((item) => item.status === 'PENDING');
+    await transitionBooking(booking, needsProviderConfirmation ? 'AWAITING_CONFIRMATION' : 'AWAITING_PAYMENT', {
       userId: user.id,
-      reason: 'Booking submitted for provider confirmation',
+      reason: needsProviderConfirmation
+        ? 'Booking submitted for provider confirmation'
+        : 'No provider confirmation required - ready for payment',
       transaction,
     });
 
     const detail = await repository.findDetailByReference(reference, { transaction });
-    return serializeBooking(detail);
+    return { booking: serializeBooking(detail), customerId: booking.customer_user_id };
   });
+
+  try {
+    const bookingRow = await models.Booking.findByPk(outcome.booking.id);
+    if (outcome.booking.status === 'AWAITING_PAYMENT') {
+      await notifications.notifyCustomer(bookingRow, {
+        type: 'BOOKING_READY',
+        title: `Booking ${outcome.booking.reference} is ready to pay`,
+        body: `Pay BDT ${outcome.booking.dueAmount} to confirm your booking.`,
+      });
+    } else {
+      await notifications.notifyBookingCreated(bookingRow);
+    }
+  } catch (err) {
+    logger.error({ err: err.message, reference: outcome.booking.reference }, 'booking notification failed');
+  }
+
+  return outcome.booking;
 }
 
 async function getBookingForUser(user, reference) {
@@ -521,7 +543,7 @@ async function listMyBookings(user, query) {
 // --------------------------------------------------------------- lifecycle
 
 async function cancelBooking(user, reference, { reason }) {
-  return sequelize.transaction(async (transaction) => {
+  const cancelled = await sequelize.transaction(async (transaction) => {
     const booking = await repository.findByReference(reference, { transaction, lock: true });
     if (!booking) throw new NotFoundError('Booking');
     if (Number(booking.customer_user_id) !== Number(user.id)) throw new NotFoundError('Booking');
@@ -575,6 +597,26 @@ async function cancelBooking(user, reference, { reason }) {
     const detail = await repository.findDetailByReference(reference, { transaction });
     return serializeBooking(detail);
   });
+
+  try {
+    const bookingRow = await models.Booking.findByPk(cancelled.id);
+    await notifications.notifyCustomer(bookingRow, {
+      type: 'BOOKING_CANCELLED',
+      title: `Booking ${cancelled.reference} cancelled`,
+      body: cancelled.status === 'REFUND_PENDING'
+        ? 'Your booking is cancelled. A refund request has been created and is awaiting review.'
+        : 'Your booking has been cancelled.',
+    });
+    await notifications.notifyProviders(bookingRow, {
+      type: 'BOOKING_CANCELLED',
+      title: `Booking ${cancelled.reference} cancelled`,
+      body: 'The customer cancelled this booking. Inventory has been released.',
+    });
+  } catch (err) {
+    logger.error({ err: err.message, reference }, 'cancellation notification failed');
+  }
+
+  return cancelled;
 }
 
 async function listProviderBookings(user, query) {
@@ -597,7 +639,7 @@ async function providerOwnItems(user, bookingId, transaction) {
 }
 
 async function acceptBooking(user, reference) {
-  return sequelize.transaction(async (transaction) => {
+  const accepted = await sequelize.transaction(async (transaction) => {
     const booking = await repository.findByReference(reference, { transaction, lock: true });
     if (!booking) throw new NotFoundError('Booking');
     const { items } = await providerOwnItems(user, booking.id, transaction);
@@ -622,10 +664,25 @@ async function acceptBooking(user, reference) {
     const detail = await repository.findDetailByReference(reference, { transaction });
     return serializeBooking(detail, { providerProfileId: user.providerProfile.id, includeCustomer: true });
   });
+
+  if (accepted.status === 'AWAITING_PAYMENT') {
+    try {
+      const bookingRow = await models.Booking.findByPk(accepted.id);
+      await notifications.notifyCustomer(bookingRow, {
+        type: 'BOOKING_READY',
+        title: `All providers accepted ${accepted.reference}`,
+        body: `Please pay BDT ${accepted.dueAmount} to confirm your booking.`,
+      });
+    } catch (err) {
+      logger.error({ err: err.message, reference }, 'acceptance notification failed');
+    }
+  }
+
+  return accepted;
 }
 
 async function rejectBooking(user, reference, { reason }) {
-  return sequelize.transaction(async (transaction) => {
+  const rejected = await sequelize.transaction(async (transaction) => {
     const booking = await repository.findByReference(reference, { transaction, lock: true });
     if (!booking) throw new NotFoundError('Booking');
     const { providerId } = await providerOwnItems(user, booking.id, transaction);
@@ -648,6 +705,19 @@ async function rejectBooking(user, reference, { reason }) {
     const detail = await repository.findDetailByReference(reference, { transaction });
     return serializeBooking(detail, { providerProfileId: providerId, includeCustomer: true });
   });
+
+  try {
+    const bookingRow = await models.Booking.findByPk(rejected.id);
+    await notifications.notifyCustomer(bookingRow, {
+      type: 'BOOKING_REJECTED',
+      title: `Booking ${rejected.reference} could not be confirmed`,
+      body: 'A provider could not take this booking. Reserved inventory has been released. Please try another option.',
+    });
+  } catch (err) {
+    logger.error({ err: err.message, reference }, 'rejection notification failed');
+  }
+
+  return rejected;
 }
 
 async function startBooking(user, reference) {
@@ -669,7 +739,7 @@ async function startBooking(user, reference) {
 }
 
 async function completeBooking(user, reference) {
-  return sequelize.transaction(async (transaction) => {
+  const completed = await sequelize.transaction(async (transaction) => {
     const booking = await repository.findByReference(reference, { transaction, lock: true });
     if (!booking) throw new NotFoundError('Booking');
     const { providerId } = await providerOwnItems(user, booking.id, transaction);
@@ -686,6 +756,19 @@ async function completeBooking(user, reference) {
     const detail = await repository.findDetailByReference(reference, { transaction });
     return serializeBooking(detail, { providerProfileId: providerId, includeCustomer: true });
   });
+
+  try {
+    const bookingRow = await models.Booking.findByPk(completed.id);
+    await notifications.notifyCustomer(bookingRow, {
+      type: 'BOOKING_COMPLETED',
+      title: `Trip ${completed.reference} completed`,
+      body: 'Thank you for travelling with POTHIK. Share your experience with a review.',
+    });
+  } catch (err) {
+    logger.error({ err: err.message, reference }, 'completion notification failed');
+  }
+
+  return completed;
 }
 
 /**
