@@ -22,11 +22,18 @@ const METHODS = [
   { value: 'sslcommerz', label: 'SSLCommerz' },
 ];
 
+const GATEWAY_LABELS = {
+  demo: 'Demo sandbox gateway',
+  sslcommerz: 'SSLCommerz',
+  bkash: 'bKash',
+};
+
 export default function PayBooking() {
   const { reference } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
   const [method, setMethod] = useState('card');
+  const [gatewayChoice, setGatewayChoice] = useState('');
   const [amount, setAmount] = useState('');
 
   const { data: booking, isLoading } = useQuery({
@@ -34,13 +41,27 @@ export default function PayBooking() {
     queryFn: () => readData(api.get(`/bookings/${reference}`)),
   });
 
+  const { data: gatewayData } = useQuery({
+    queryKey: ['payment-gateways'],
+    queryFn: () => readData(api.get('/payments/gateways')),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const configuredGateways = (gatewayData?.items || []).filter((entry) => entry.configured);
+  const defaultGateway =
+    configuredGateways.find((entry) => entry.name === gatewayData?.default)?.name || configuredGateways[0]?.name || '';
+  const gateway = configuredGateways.some((entry) => entry.name === gatewayChoice) ? gatewayChoice : defaultGateway;
+  const methods = gateway === 'bkash' ? METHODS.filter((entry) => entry.value === 'bkash') : METHODS;
+  const activeMethod = methods.some((entry) => entry.value === method) ? method : methods[0]?.value || 'card';
+
   const initiate = useMutation({
     mutationFn: () =>
       readData(
         api.post('/payments', {
           bookingReference: reference,
           amount: Number(amount || booking.dueAmount),
-          method,
+          method: activeMethod,
+          gateway: gateway || undefined,
           idempotencyKey: newIdempotencyKey(),
         })
       ),
@@ -113,8 +134,15 @@ export default function PayBooking() {
                 hint={`Outstanding balance: ${formatCurrency(due)}. Partial payments are allowed.`}
                 error={amount !== '' && invalid ? `Enter an amount between 1 and ${formatCurrency(due)}.` : undefined}
               />
-              <Select label="Payment method" value={method} onChange={(event) => setMethod(event.target.value)}>
-                {METHODS.map((entry) => (
+              {configuredGateways.length > 1 && (
+                <Select label="Gateway" value={gateway} onChange={(event) => setGatewayChoice(event.target.value)}>
+                  {configuredGateways.map((entry) => (
+                    <option key={entry.name} value={entry.name}>{GATEWAY_LABELS[entry.name] || entry.name}</option>
+                  ))}
+                </Select>
+              )}
+              <Select label="Payment method" value={activeMethod} onChange={(event) => setMethod(event.target.value)}>
+                {methods.map((entry) => (
                   <option key={entry.value} value={entry.value}>{entry.label}</option>
                 ))}
               </Select>
@@ -125,7 +153,7 @@ export default function PayBooking() {
                 </p>
                 <p className="mt-1">
                   Payments are submitted with an idempotency key, so a retry can never charge twice. The booking confirms only after the
-                  gateway signature is validated by our backend.
+                  gateway session is re-verified by our backend.
                 </p>
               </div>
 
@@ -159,7 +187,9 @@ export default function PayBooking() {
             </dl>
             <p className="mt-4 flex items-start gap-2 text-xs text-slate-500">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" />
-              In demo environments the signed sandbox gateway simulates the provider. Production uses SSLCommerz, bKash or Nagad.
+              {gateway === 'bkash'
+                ? 'You will finish the payment on bKash tokenized checkout, then land back here. The backend confirms with bKash before the booking updates.'
+                : 'In demo environments the signed sandbox gateway simulates the provider. Production can run SSLCommerz or bKash.'}
             </p>
           </Card>
         </div>

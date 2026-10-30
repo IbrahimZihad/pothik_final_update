@@ -7,7 +7,7 @@ POTHIK is a full-stack OTA that lets travellers plan a trip across Bangladesh â€
 | Frontend | React 18, Vite 5, React Router 6, TanStack Query 5, Tailwind CSS 3, Recharts |
 | Backend | Node.js 22, Express 4, Sequelize 6, Umzug migrations, Zod validation, Pino logging |
 | Data | MySQL 8 (authoritative), Redis + BullMQ (optional jobs/cache) |
-| Payments | Gateway abstraction: signed demo gateway (default) or SSLCommerz |
+| Payments | Gateway abstraction: signed demo gateway (default), SSLCommerz or bKash Tokenized Checkout |
 | Auth | JWT access tokens (15 min) + rotating refresh cookie, RBAC, backend ownership checks |
 | Tests | Jest + Supertest (backend), Vitest + Testing Library, Playwright (frontend) |
 
@@ -55,7 +55,7 @@ Demo content covers all nine destinations, each with at least one published hote
 | [docs/TESTING.md](docs/TESTING.md) | How to run every suite and what it covers |
 | [docs/IMPLEMENTATION_PROGRESS.md](docs/IMPLEMENTATION_PROGRESS.md) | Phased progress log with evidence |
 
-Interactive API reference: `/api-docs` (Swagger UI) and `/openapi.json`. The OpenAPI 3.0.3 document is generated from the source (`cd backend && npm run openapi`) and covers 114 paths / 140 operations; a copy is written to [docs/openapi.json](docs/openapi.json), with the narrative catalogue in [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md).
+Interactive API reference: `/api-docs` (Swagger UI) and `/openapi.json`. The OpenAPI 3.0.3 document is generated from the source (`cd backend && npm run openapi`) and covers 115 paths / 142 operations; a copy is written to [docs/openapi.json](docs/openapi.json), with the narrative catalogue in [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md).
 
 ## Link previews and SEO
 
@@ -77,4 +77,4 @@ docs/      Architecture and operations documentation
 
 ## Honesty note
 
-The application was developed and verified end-to-end against SQLite with the demo payment gateway. MySQL 8, Redis/BullMQ, Docker/Nginx and SSLCommerz are implemented but were **not** executed in this environment; see PROJECT_AUDIT.md for the exact verification matrix before claiming production readiness.
+The application was developed and verified end-to-end against SQLite with the demo payment gateway. MySQL 8, Redis/BullMQ, Docker/Nginx, SSLCommerz and bKash are implemented but were **not** executed in this environment (bKash is covered by mocked-API unit tests and an integration settlement test); see PROJECT_AUDIT.md for the exact verification matrix before claiming production readiness.

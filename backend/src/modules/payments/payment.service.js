@@ -6,7 +6,7 @@ const repository = require('./payment.repository');
 const bookingService = require('../bookings/booking.service');
 const { transitionBooking } = require('../bookings/booking.state');
 const notifications = require('../notifications/notification.service');
-const { getGateway } = require('../../infrastructure/payments');
+const { getGateway, gatewayStatus } = require('../../infrastructure/payments');
 const config = require('../../config');
 const logger = require('../../config/logger');
 const { NotFoundError, ForbiddenError, BusinessRuleError, ConflictError } = require('../../shared/errors');
@@ -112,6 +112,10 @@ function callbackUrls(gatewayName) {
 
 // ----------------------------------------------------------------- payments
 
+function paymentGateways() {
+  return gatewayStatus();
+}
+
 async function initiatePayment(user, payload) {
   const booking = await repository.findBookingByReference(payload.bookingReference);
   if (!booking) throw new NotFoundError('Booking');
@@ -183,14 +187,17 @@ async function initiatePayment(user, payload) {
 }
 
 async function resolvePayment(payload, verified) {
-  const candidates = [payload.paymentId, payload.payment_id, payload.tran_id, verified.reference].filter(
+  const candidates = [payload.paymentId, payload.payment_id, payload.paymentID, payload.tran_id, verified.reference].filter(
     (value) => value !== undefined && value !== null && value !== ''
   );
   for (const candidate of candidates) {
-    if (/^\d+$/.test(String(candidate))) {
-      const byId = await repository.findPaymentById(Number(candidate));
+    const value = String(candidate);
+    if (/^\d+$/.test(value)) {
+      const byId = await repository.findPaymentById(Number(value));
       if (byId) return byId;
     }
+    const byTxn = await repository.findPaymentByTxn(value);
+    if (byTxn) return byTxn;
   }
   if (verified.providerTxnId) {
     const byTxn = await repository.findPaymentByTxn(verified.providerTxnId);
@@ -305,7 +312,8 @@ async function handleCallback(gatewayName, payload) {
         gateway_payload: { ...(payment.gateway_payload || {}), callback: verified.raw ?? verified },
       });
     }
-    return { payment: serializePayment(payment), bookingStatus: null, settled: false };
+    const failedBooking = await models.Booking.findByPk(payment.booking_id, { attributes: ['id', 'reference'] });
+    return { payment: serializePayment(payment), bookingStatus: null, bookingReference: failedBooking?.reference || null, settled: false };
   }
 
   const { payment: settled, booking, alreadySettled, refund } = await recordSettlement(payment.id, verified);
@@ -322,6 +330,7 @@ async function handleCallback(gatewayName, payload) {
   return {
     payment: serializePayment(settled),
     bookingStatus: booking.status,
+    bookingReference: booking.reference,
     settled: !alreadySettled,
     alreadySettled,
   };
@@ -720,6 +729,7 @@ async function transitionPayout(admin, id, action, { reference, notes } = {}, co
 }
 
 module.exports = {
+  paymentGateways,
   initiatePayment,
   handleCallback,
   completeDemoPayment,

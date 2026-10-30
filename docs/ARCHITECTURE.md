@@ -16,7 +16,7 @@ flowchart LR
   DB[(MySQL 8<br/>source of truth)]
   Redis[(Redis<br/>cache + BullMQ)]
   Files[(Upload storage<br/>verification docs, avatars)]
-  Gateway[Payment gateway<br/>demo HMAC or SSLCommerz]
+  Gateway[Payment gateway<br/>demo HMAC, SSLCommerz or bKash]
   Mail[Email transport]
 
   Customer --> SPA

@@ -121,7 +121,8 @@
           "type": "string",
           "enum": [
             "demo",
-            "sslcommerz"
+            "sslcommerz",
+            "bkash"
           ]
         }
       },
@@ -731,7 +732,8 @@
             "type": "string",
             "enum": [
               "demo",
-              "sslcommerz"
+              "sslcommerz",
+              "bkash"
             ]
           },
           "idempotencyKey": {
@@ -5132,7 +5134,91 @@
         ]
       }
     },
+    "/payments/gateways": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "List payment gateways and whether each is configured",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/payments/callback/{gateway}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Gateway browser return (bKash redirect; verified by the adapter)",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "bKash returns the customer with paymentID and a status hint. The hint is not trusted: the adapter executes or queries the payment and only then settles.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GatewayParam"
+          }
+        ]
+      },
       "post": {
         "tags": [
           "Payments"

@@ -256,6 +256,18 @@ patch('/trips/{id}', { tags: ['Bookings'], summary: 'Update a saved trip', param
 del('/trips/{id}', { tags: ['Bookings'], summary: 'Discard a saved trip', params: ['IdParam'], write: true, notFound: true });
 
 // ------------------------------------------------------------------ payments
+get('/payments/gateways', {
+  tags: ['Payments'],
+  summary: 'List payment gateways and whether each is configured',
+  auth: false,
+});
+get('/payments/callback/{gateway}', {
+  tags: ['Payments'],
+  summary: 'Gateway browser return (bKash redirect; verified by the adapter)',
+  description: 'bKash returns the customer with paymentID and a status hint. The hint is not trusted: the adapter executes or queries the payment and only then settles.',
+  auth: false,
+  params: ['GatewayParam'],
+});
 post('/payments/callback/{gateway}', {
   tags: ['Payments'],
   summary: 'Gateway server callback (payload verified by the adapter)',
@@ -518,7 +530,7 @@ const openapi = {
       ReferenceParam: { name: 'reference', in: 'path', required: true, schema: { type: 'string', example: 'PTK-2026-000123' } },
       SlugParam: { name: 'slug', in: 'path', required: true, schema: { type: 'string', example: 'sajek-valley' } },
       DocumentIdParam: { name: 'documentId', in: 'path', required: true, schema: { type: 'integer', minimum: 1 } },
-      GatewayParam: { name: 'gateway', in: 'path', required: true, schema: { type: 'string', enum: ['demo', 'sslcommerz'] } },
+      GatewayParam: { name: 'gateway', in: 'path', required: true, schema: { type: 'string', enum: ['demo', 'sslcommerz', 'bkash'] } },
       ResultParam: { name: 'result', in: 'path', required: true, schema: { type: 'string', enum: ['success', 'fail', 'cancel'] } },
     },
     schemas: {
@@ -729,7 +741,7 @@ const openapi = {
           bookingReference: { type: 'string', example: 'PTK-2026-000123' },
           amount: { type: 'number', description: 'Optional; server validates against the booking balance' },
           method: { type: 'string', enum: ['card', 'bkash', 'nagad', 'rocket', 'bank', 'sslcommerz'], default: 'card' },
-          gateway: { type: 'string', enum: ['demo', 'sslcommerz'] },
+          gateway: { type: 'string', enum: ['demo', 'sslcommerz', 'bkash'] },
           idempotencyKey: { type: 'string', minLength: 8, maxLength: 120 },
         },
       },

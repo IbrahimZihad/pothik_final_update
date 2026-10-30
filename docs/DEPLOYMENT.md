@@ -37,7 +37,7 @@ flowchart LR
 
 - Docker Engine 24+ with Compose v2.17+ (needed for `service_completed_successfully`).
 - A domain name and TLS certificates for production.
-- SSLCommerz merchant credentials for live payments.
+- Payment gateway credentials for the gateway you enable — SSLCommerz (`SSLCOMMERZ_*`) or bKash Tokenized Checkout (`BKASH_*`).
 - An SMTP/API email provider — **the shipped mailer only logs** (see limitations).
 
 ## 2. Configure
@@ -114,9 +114,10 @@ All keys are documented in `deployment/.env.example` and `backend/.env.example`.
 | Variable | Effect |
 | --- | --- |
 | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Token signing; minimum 32 characters in production |
-| `PAYMENT_GATEWAY` | `sslcommerz` in production; `demo` only outside production |
+| `PAYMENT_GATEWAY` | `sslcommerz` or `bkash` in production; `demo` only outside production |
 | `PAYMENT_CALLBACK_SECRET` | Verifies demo/HMAC callbacks |
-| `SSLCOMMERZ_*` | Merchant credentials and sandbox flag |
+| `SSLCOMMERZ_*` | SSLCommerz merchant credentials and sandbox flag |
+| `BKASH_APP_KEY`, `BKASH_APP_SECRET`, `BKASH_USERNAME`, `BKASH_PASSWORD` | bKash Tokenized Checkout credentials; `BKASH_SANDBOX` and `BKASH_BASE_URL` are optional |
 | `DB_POOL_MAX` | Per-replica pool; keep `pool × replicas < MySQL max_connections` |
 | `RATE_LIMIT_MAX`, `AUTH_RATE_LIMIT_MAX` | Per-process limits (see scaling caveat) |
 | `SEED_DEMO_PASSWORD`, `ADMIN_*` | Seed data and bootstrap administrator |
@@ -189,6 +190,8 @@ Application rollback means redeploying the previous image tag. Database rollback
 | `503` on `/health/ready` | API cannot reach MySQL | Check `DB_*`, network, MySQL health |
 | Nginx `502` | API replicas down or upstream name wrong | `docker compose ps`, `docker compose logs nginx api-1` |
 | Login works but refresh loops | Clock skew or cookie blocked by wrong `PUBLIC_URL`/CORS | Verify HTTPS origin, `CORS_ORIGINS`, and cookie settings |
-| Payments rejected at boot | `PAYMENT_GATEWAY=demo` with `NODE_ENV=production` | Configure SSLCommerz or run staging with `NODE_ENV=development` |
+| Payments rejected at boot | `PAYMENT_GATEWAY=demo` with `NODE_ENV=production` | Configure SSLCommerz/bKash or run staging with `NODE_ENV=development` |
+| `GATEWAY_NOT_CONFIGURED` on payment start | `PAYMENT_GATEWAY=bkash` but one of `BKASH_*` is empty | Fill all four bKash credentials and restart `api-*`/`worker` |
+| bKash returns to the site but the booking stays unpaid | Callback URL unreachable or `API_URL`/`PUBLIC_URL` wrong | Ensure the callback host is public HTTPS; check `payment_verification_failed` logs |
 | Uploads 404 after restart | Uploads volume not shared | Ensure the named volume is mounted into every API |
 | Document link 403/404 | Not the owner/admin, or file missing from the private volume | Check `provider_documents.file_url` and the volume contents |

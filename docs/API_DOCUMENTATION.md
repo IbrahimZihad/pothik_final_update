@@ -109,10 +109,12 @@ Customer (`/payments`):
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | `/payments` | Initiate payment (`bookingReference`, `method`, `idempotencyKey`) |
+| POST | `/payments` | Initiate payment (`bookingReference`, `method`, optional `gateway`, `idempotencyKey`) |
+| GET | `/payments/gateways` | Public: default gateway and which adapters are configured |
 | GET | `/payments`, `/payments/:id` | Own payments |
 | POST | `/payments/:id/demo-complete` | Sandbox settlement (demo gateway only) |
-| POST | `/payments/callback/:gateway[/:result]` | Gateway callback; payload is verified server-side |
+| GET | `/payments/callback/:gateway[/:result]` | Browser return (bKash redirects with GET); 303 to the booking page after server-side verification |
+| POST | `/payments/callback/:gateway[/:result]` | Server/gateway callback; payload is verified server-side |
 | GET | `/payments/refunds` | Own refunds |
 | POST | `/payments/refunds` | Request a refund (`bookingReference`, optional amount) |
 

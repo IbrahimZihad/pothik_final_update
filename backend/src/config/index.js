@@ -44,7 +44,7 @@ const schema = z.object({
     .default('false')
     .transform((v) => v === 'true'),
 
-  PAYMENT_GATEWAY: z.enum(['demo', 'sslcommerz']).default('demo'),
+  PAYMENT_GATEWAY: z.enum(['demo', 'sslcommerz', 'bkash']).default('demo'),
   PAYMENT_CALLBACK_SECRET: z.string().default(isTest ? 'test-callback-secret' : ''),
   SSLCOMMERZ_STORE_ID: z.string().optional().default(''),
   SSLCOMMERZ_STORE_PASSWORD: z.string().optional().default(''),
@@ -52,6 +52,15 @@ const schema = z.object({
     .string()
     .default('true')
     .transform((v) => v === 'true'),
+  BKASH_APP_KEY: z.string().optional().default(''),
+  BKASH_APP_SECRET: z.string().optional().default(''),
+  BKASH_USERNAME: z.string().optional().default(''),
+  BKASH_PASSWORD: z.string().optional().default(''),
+  BKASH_SANDBOX: z
+    .string()
+    .default('true')
+    .transform((v) => v === 'true'),
+  BKASH_BASE_URL: z.string().optional().default(''),
 
   PLATFORM_COMMISSION_RATE: z.coerce.number().min(0).max(100).default(10),
   HOTEL_COMMISSION_RATE: z.coerce.number().min(0).max(100).default(12),
@@ -125,6 +134,14 @@ const config = {
       storeId: env.SSLCOMMERZ_STORE_ID,
       storePassword: env.SSLCOMMERZ_STORE_PASSWORD,
       sandbox: env.SSLCOMMERZ_SANDBOX,
+    },
+    bkash: {
+      appKey: env.BKASH_APP_KEY,
+      appSecret: env.BKASH_APP_SECRET,
+      username: env.BKASH_USERNAME,
+      password: env.BKASH_PASSWORD,
+      sandbox: env.BKASH_SANDBOX,
+      baseUrl: env.BKASH_BASE_URL,
     },
   },
   commission: {

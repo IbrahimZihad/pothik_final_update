@@ -8,20 +8,47 @@ const { writeLimiter } = require('../../shared/middleware/rateLimit');
 const { asyncHandler } = require('../../shared/utils/asyncHandler');
 const { success, created } = require('../../shared/responses');
 const { PERMISSIONS, ROLES } = require('../../shared/constants/roles');
+const config = require('../../config');
+const logger = require('../../config/logger');
 const validators = require('./payment.validators');
 const service = require('./payment.service');
 
 const customerRouter = express.Router();
 
 // Public gateway callbacks. The payload is never trusted - every gateway
-// re-verifies it (HMAC for the sandbox gateway, validation API for SSLCommerz).
-async function gatewayCallback(req, res) {
-  const payload = { ...req.body };
+// re-verifies it (HMAC for the sandbox gateway, validation/execute APIs for
+// SSLCommerz and bKash). bKash returns the browser with GET, so both verbs are
+// accepted; GET callbacks end on a booking page instead of raw JSON.
+async function gatewayCallback(req, res, next) {
+  const payload = { ...req.query, ...req.body };
   if (req.params.result) payload.result = req.params.result.toUpperCase();
-  const result = await service.handleCallback(req.params.gateway, payload);
-  return success(res, { message: 'Payment callback processed', data: result });
+
+  try {
+    const result = await service.handleCallback(req.params.gateway, payload);
+    if (req.method === 'GET') {
+      const outcome = result.settled || result.alreadySettled ? 'success' : 'failed';
+      const reference = result.bookingReference || result.payment?.bookingReference;
+      const target = reference ? `/account/bookings/${reference}` : '/account/bookings';
+      return res.redirect(303, `${config.appUrl}${target}?payment=${outcome}`);
+    }
+    return success(res, { message: 'Payment callback processed', data: result });
+  } catch (err) {
+    if (req.method !== 'GET') return next(err);
+    logger.warn({ err: err.message, gateway: req.params.gateway }, 'payment callback redirect failed');
+    return res.redirect(303, `${config.appUrl}/account/bookings?payment=failed`);
+  }
 }
 
+customerRouter.get(
+  '/callback/:gateway',
+  validate({ params: validators.callbackParams, query: validators.callbackBody }),
+  asyncHandler(gatewayCallback)
+);
+customerRouter.get(
+  '/callback/:gateway/:result',
+  validate({ params: validators.callbackParams, query: validators.callbackBody }),
+  asyncHandler(gatewayCallback)
+);
 customerRouter.post(
   '/callback/:gateway',
   validate({ params: validators.callbackParams }),
@@ -31,6 +58,11 @@ customerRouter.post(
   '/callback/:gateway/:result',
   validate({ params: validators.callbackParams }),
   asyncHandler(gatewayCallback)
+);
+
+customerRouter.get(
+  '/gateways',
+  asyncHandler(async (req, res) => success(res, { message: 'Payment gateways retrieved', data: service.paymentGateways() }))
 );
 
 customerRouter.use(authenticate);

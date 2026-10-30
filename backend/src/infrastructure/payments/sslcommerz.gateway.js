@@ -29,6 +29,10 @@ class SslcommerzGateway {
     }
   }
 
+  isConfigured() {
+    return Boolean(this.storeId && this.storePassword);
+  }
+
   async createSession({ payment, booking, customer, urls }) {
     this.assertConfigured();
     const body = new URLSearchParams({

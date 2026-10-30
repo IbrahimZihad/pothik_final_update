@@ -20,6 +20,10 @@ class DemoGateway {
     this.name = 'demo';
   }
 
+  isConfigured() {
+    return !config.isProd;
+  }
+
   async createSession({ payment, booking }) {
     const signature = sign(`${payment.id}:${payment.amount}:${booking.reference}`);
     const redirectUrl = `${config.appUrl}/pay/demo/${payment.id}?sig=${signature}&amount=${payment.amount}`;

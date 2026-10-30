@@ -4,11 +4,11 @@ POTHIK has three executable layers plus manual browser checks. All commands belo
 
 | Layer | Tool | Location | Command | Last result |
 | --- | --- | --- | --- | --- |
-| API integration | Jest + Supertest | `backend/tests` | `cd backend && npm test` | 8 suites, 57 tests, 128.9 s |
+| API integration | Jest + Supertest | `backend/tests` | `cd backend && npm test` | 9 suites, 69 tests, 142.2 s |
 | UI unit/component | Vitest + Testing Library | `frontend/src/**/*.test.*` | `cd frontend && npm test` | 4 files, 22 tests, 2.1 s |
 | End-to-end | Playwright (Chromium) | `frontend/e2e` | `cd frontend && npm run test:e2e` | 11 tests, 12.2 s |
 | Production build | Vite | `frontend` | `VITE_SITE_URL=https://example.test npm run build` | Build succeeds; absolute URLs injected |
-| OpenAPI document | Node | `backend/src/docs` | `cd backend && npm run openapi` | 114 paths, 140 operations |
+| OpenAPI document | Node | `backend/src/docs` | `cd backend && npm run openapi` | 115 paths, 142 operations |
 
 Results were recorded on 2026-10-30 with SQLite and the demo payment gateway. See [PROJECT_AUDIT.md](PROJECT_AUDIT.md) for what was and was not verified.
 
@@ -41,7 +41,8 @@ Use a disposable schema only: the harness runs migrations and seeders and expect
 | `access.test.js` | Role boundaries, ownership enforcement, protected admin/provider routes |
 | `catalog.test.js` | Destinations, packages, blogs, search, admin catalog mutations, validation errors |
 | `booking.test.js` | Availability, quote, create, anti-overbooking, state machine transitions, provider accept/reject/start/complete, cancellation |
-| `payments.test.js` | Initiation, idempotency, demo settlement, overpayment handling, refund decisions, commission ledger, payout balance rules |
+| `payments.test.js` | Initiation, idempotency, demo settlement, gateway capabilities, bKash initiation + GET callback settlement (mocked bKash API), overpayment handling, refund decisions, commission ledger, payout balance rules |
+| `bkash.gateway.test.js` | Adapter unit tests with a mocked `fetch`: credential guards, token caching, session creation, execute/status verification, failure/cancel/unknown hints, missing paymentID, auth rejection |
 | `reviews.test.js` | Completed-booking requirement, duplicate and out-of-scope rejection, moderation visibility, provider reply |
 | `suppliers.test.js` | Provider profile, inventory CRUD, availability calendars, cross-provider ownership, private document storage and download |
 | `admin.test.js` | Users and roles, provider decisions, document review, booking search, coupons, blog management, audit log |
@@ -89,12 +90,12 @@ Performed in a real browser against the running API and SQLite database:
 
 `npm run test:coverage` is configured with an 80% line/function threshold for `src/modules/**` and `src/shared/**` (routes excluded). Coverage is a guardrail, not a substitute for the scenario assertions above.
 
-Latest run (2026-10-30, SQLite): 8 suites / 57 tests passed in 151.4 s, exit code 0 — **83.49% lines** (2114/2532) and **83.39% functions** (457/548) across the collected files, above both thresholds. Re-run the command to refresh these numbers rather than quoting them after code changes.
+Latest run (2026-10-30, SQLite): 9 suites / 69 tests passed in 142.8 s, exit code 0 — **83.68% lines** and **83.78% functions** across the collected files, above both thresholds. Re-run the command to refresh these numbers rather than quoting them after code changes.
 
 ## 4. Gaps
 
 - No load, soak or concurrency benchmark. Anti-overbooking is tested functionally, not under contention.
-- No MySQL, Redis, Nginx or SSLCommerz execution in this environment.
+- No MySQL, Redis, Nginx, SSLCommerz or bKash sandbox execution in this environment. The bKash adapter is tested against a mocked API only.
 - Only Chromium is configured for Playwright.
 - No visual regression testing.
 - No test for real email delivery (the dev mailer only logs).

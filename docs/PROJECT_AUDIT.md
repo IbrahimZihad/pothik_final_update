@@ -12,7 +12,7 @@
 | Trip builder with server-side pricing | Yes | Yes | `/trips/quote` prices on the server; client never supplies totals |
 | Booking engine, anti-overbooking, state machine | Yes | Yes | Row locks + per-date inventory; 11-state transition map |
 | Auth: JWT access + rotating refresh, RBAC, ownership | Yes | Yes | Refresh reuse revokes the token family |
-| Payments, refunds, commissions, payouts | Yes | Yes (demo gateway) | SSLCommerz adapter implemented, not exercised |
+| Payments, refunds, commissions, payouts | Yes | Yes (demo gateway) | SSLCommerz and bKash adapters implemented; neither run against a real gateway |
 | Reviews with verified-booking rules and moderation | Yes | Yes | Owner, completed-booking and duplicate checks |
 | Notifications, booking messages, background jobs | Yes | Yes (in-app + inline queue) | Email is a log-only dev transport; Redis queue not run |
 | Admin back office | Yes | Yes | Users, providers, documents, bookings, finance, coupons, reviews, blogs, audit |
@@ -22,18 +22,19 @@
 | Redis + BullMQ | Supported | **No** | No Redis available; inline fallback verified instead |
 | Docker / Nginx deployment | Shipped | **No** | Docker CLI is not installed here; compose YAML parsed only |
 | SSLCommerz sandbox | Adapter present | **No** | Requires merchant credentials and public callback URL |
+| bKash sandbox | Adapter present | **No** | Mocked-API unit tests and a full callback/settlement integration test; no bKash credentials available |
 
 ## 2. Evidence collected
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Backend integration suites | `cd backend && npm test` | **8/8 suites, 57/57 tests passed**, 128.9 s (latest run) |
+| Backend integration suites | `cd backend && npm test` | **9/9 suites, 69/69 tests passed**, 142.2 s (latest run) |
 | Frontend unit tests | `cd frontend && npm test` | **4 files, 22/22 tests passed**, 2.1 s |
 | End-to-end (Chromium) | `cd frontend && npm run test:e2e` | **11/11 tests passed**, 12.2 s, own API + SPA on ports 5100/5180 |
 | Link previews / structured data | `e2e/seo.spec.js` | Absolute `og:image` + dimensions, WebSite/TouristDestination/BlogPosting JSON-LD, noindex search, robots.txt |
 | Production build | `VITE_SITE_URL=https://example.test npm run build` | Built in 6.42 s; main JS 1,084 kB (296 kB gzip); absolute canonical/OG URLs injected |
-| Coverage gate | `cd backend && npm run test:coverage` | Exit 0; 83.49% lines / 83.39% functions (80% thresholds) |
-| OpenAPI generation | `cd backend && npm run openapi` | 114 paths / 140 operations written to `docs/openapi.json` |
+| Coverage gate | `cd backend && npm run test:coverage` | Exit 0; 83.68% lines / 83.78% functions (80% thresholds) |
+| OpenAPI generation | `cd backend && npm run openapi` | 115 paths / 142 operations written to `docs/openapi.json` |
 | Migrations + seeders | `npm run db:setup` (SQLite) | 7 seeders: 8 divisions, 64 districts, 9 destinations, 4 packages, 3 posts, 9 hotels (1 per destination), transport, guide, 5 bookings |
 | Seeder idempotency | Run `db:seed` twice | Second run completed without duplicate rows (refund status stayed `REFUNDED`) |
 | Payout lifecycle | Browser: provider request → admin approve → mark paid | Available balance ৳9,680 → ৳0; paid-out ৳9,680; audit rows written |
@@ -64,7 +65,7 @@ Test harness detail: each backend suite gets a fresh SQLite file created by the 
 - Provider actions: accept, reject, start, complete. Completion is what makes provider money available.
 
 ### 3.4 Payments, refunds, commissions, payouts
-- Gateway abstraction with a signed demo gateway and an SSLCommerz adapter. Callbacks are verified server-side, never trusted from the browser.
+- Gateway abstraction with a signed demo gateway (HMAC), an SSLCommerz adapter and a bKash Tokenized Checkout adapter. Callbacks are verified server-side, never trusted from the browser; bKash browser returns are accepted over GET and redirected to the booking page.
 - Idempotency keys on initiation; settlement locks payment and booking rows; overpayment is auto-refunded.
 - Refund workflow `REQUESTED → APPROVED → PROCESSED` / `REJECTED`, with booking status kept consistent.
 - Commission ledger per booking item; provider finance derives earned/available/paid-out and refuses payouts above the available balance.
@@ -100,7 +101,7 @@ Test harness detail: each backend suite gets a fresh SQLite file created by the 
 | Refresh tokens hashed at rest, rotation + reuse detection | Yes |
 | Authorization enforced in the API, not only the UI | Yes |
 | Provider ownership checks on inventory, bookings and documents | Yes |
-| Payment callbacks verified and idempotent | Yes (demo gateway exercised) |
+| Payment callbacks verified and idempotent | Yes (demo gateway end to end; bKash via mocked API and integration settlement test) |
 | Financial transitions audited with actor, IP and request id | Yes |
 | SQL injection surface | ORM parameterized queries; no raw user input concatenation found |
 | Upload type/size limits; KYC documents not publicly served | Yes |
@@ -116,7 +117,7 @@ These are real and should be addressed before claiming production readiness.
 2. **MySQL was not executed here.** The code path is implemented (`mysql2`, utf8mb4, UTC, pool settings) and the suites accept `DB_DIALECT=mysql`, but no MySQL server was available. Run the full suite against MySQL before launch.
 3. **Redis/BullMQ was not executed here.** Only the inline fallback was exercised. Verify queue retries, worker restarts and job visibility in staging.
 4. **Docker and Nginx were not run.** `docker compose config` and a live request through Nginx remain unverified; the compose file was YAML-parsed only.
-5. **SSLCommerz was not exercised.** The adapter needs sandbox credentials and a public callback URL. IPN verification, failure/cancel paths and reconciliation should be tested in sandbox.
+5. **No payment gateway has been exercised against a real sandbox.** SSLCommerz needs merchant credentials and a public callback URL; bKash needs Tokenized Checkout credentials. The bKash adapter is covered by unit tests against a mocked bKash API (`tests/bkash.gateway.test.js`) and by an integration test that runs initiation, the GET browser callback and settlement (`tests/payments.test.js`), but its real `token/grant`, `create`, `execute`, `payment/status` calls and sandbox browser experience are unverified. Test success, failure, cancel, duplicate callbacks and reconciliation in each sandbox before launch.
 6. **Email is log-only.** `src/infrastructure/email/mailer.js` logs messages outside tests. Production needs an SMTP/API transport; password reset and verification emails will not reach users as shipped.
 7. **No automatic expiry of unpaid bookings.** `bookings.expires_at` exists in the schema but is never set and no job enforces it. Unpaid holds stay until cancelled.
 8. **Booking reminders are not scheduled.** The handler exists, but nothing enqueues reminder jobs yet.
@@ -135,6 +136,7 @@ These are real and should be addressed before claiming production readiness.
 - [ ] Provision MySQL 8.4/8.0 with utf8mb4, UTC and backups; run migrations and the full test suite with `DB_DIALECT=mysql`.
 - [ ] Set unique 32+ byte JWT secrets, `PAYMENT_CALLBACK_SECRET`, and an admin bootstrap password; remove all demo credentials and data.
 - [ ] Configure SSLCommerz production credentials and a public HTTPS callback URL; test success, failure, cancel and duplicate IPN.
+- [ ] Configure bKash Tokenized Checkout credentials (`BKASH_*`), set `PAYMENT_GATEWAY=bkash`, and run a sandbox payment: success, failure, cancel, duplicate return, and an amount-tampered callback.
 - [ ] Replace the log mailer with a real provider and verify reset/verification/notification delivery.
 - [ ] Terminate TLS at Nginx, enable HSTS, restrict `/api-docs` if it should not be public.
 - [ ] Enable Redis, run the worker as a separate service, and test retries plus Redis outage behaviour.
@@ -167,4 +169,4 @@ cd ../backend && npm run openapi
 
 ## 8. Conclusion
 
-The repository is a working OTA slice, not a mockup: the booking, payment, refund, commission and payout flows are enforced by the API, exercised by integration tests and demonstrated in the browser. It is **not yet production-proven** on MySQL, Redis, Docker/Nginx, SSLCommerz or email delivery, and the limitations in section 5 are material. Treat the local verification as strong evidence of behaviour, not as a deployment sign-off.
+The repository is a working OTA slice, not a mockup: the booking, payment, refund, commission and payout flows are enforced by the API, exercised by integration tests and demonstrated in the browser. It is **not yet production-proven** on MySQL, Redis, Docker/Nginx, SSLCommerz, bKash or email delivery, and the limitations in section 5 are material. Treat the local verification as strong evidence of behaviour, not as a deployment sign-off.

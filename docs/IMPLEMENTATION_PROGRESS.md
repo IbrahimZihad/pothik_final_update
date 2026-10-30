@@ -30,7 +30,7 @@ Chronological log of what was built and how it was verified. Every "verified" en
 - Server-side trip quoting; the client never supplies prices.
 - Transactional booking creation with inventory row locks, per-date availability, commission snapshots and status history.
 - Strict 11-state booking machine with provider accept/reject/start/complete actions.
-- Payment abstraction (signed demo gateway, SSLCommerz adapter), idempotency keys, callback verification, settlement locks, overpayment auto-refund.
+- Payment abstraction (signed demo gateway, SSLCommerz adapter, bKash Tokenized Checkout adapter), idempotency keys, callback verification, settlement locks, overpayment auto-refund.
 - Refund queue, commission ledger and derived provider balance with guarded payouts.
 - Verified-booking reviews (owner, completed, target scope, duplicate rules) with moderation and provider replies.
 - Admin users/roles/status, provider approval and document review, bookings, coupons, reviews, blogs, audit.
@@ -40,9 +40,10 @@ Chronological log of what was built and how it was verified. Every "verified" en
 
 **Status: complete and verified**
 
-- Eight Jest/Supertest suites built on real migrations and seeders, one fresh SQLite database per suite.
-- 57 tests covering auth, access control, catalog (including one published hotel per destination), bookings and anti-overbooking, payments/refunds/payouts, reviews, suppliers and admin.
-- Latest run: **8/8 suites, 57/57 tests, 128.909 s**; coverage run **151.403 s**, exit code 0.
+- Nine Jest/Supertest suites built on real migrations and seeders, one fresh SQLite database per suite.
+- 69 tests covering auth, access control, catalog (including one published hotel per destination), bookings and anti-overbooking, payments/refunds/payouts, the bKash adapter (mocked API) and its callback/settlement path, reviews, suppliers and admin.
+- Latest run: **9/9 suites, 69/69 tests, 142.175 s**; coverage run **142.8 s**, exit code 0.
+- bKash adapter tests were added after the gateway work: token caching, session creation, execute/status verification, failure/cancel hints, missing credentials and the GET browser-return redirect. These use a mocked bKash API; no sandbox credentials were available.
 - Added after review: financial audit rows for refund/payout transitions, Multer error mapping (`413`/`400`), private document storage/download with owner/admin checks, and the refund idempotency fix.
 
 ## Phase 5 — Frontend shell and design system
@@ -82,12 +83,12 @@ Chronological log of what was built and how it was verified. Every "verified" en
 
 - Documentation: README, ARCHITECTURE, DATABASE_DESIGN, API_DOCUMENTATION, AUTHENTICATION, BOOKING_WORKFLOW, PAYMENT_WORKFLOW, LOAD_BALANCING, DEPLOYMENT, TESTING, PROJECT_AUDIT, IMPLEMENTATION_PROGRESS.
 - Mermaid diagrams: system context, module map, request lifecycle, ER model, token rotation, booking state machine, booking sequence, payment sequence, deployment topology, queue degradation (ten in total).
-- OpenAPI 3.0.3 document generated from `backend/src/docs/openapi.js`: **114 paths / 140 operations**, served at `/api-docs` and `/openapi.json`, exported to `docs/openapi.json` by `npm run openapi`.
+- OpenAPI 3.0.3 document generated from `backend/src/docs/openapi.js`: **115 paths / 142 operations**, served at `/api-docs` and `/openapi.json`, exported to `docs/openapi.json` by `npm run openapi`.
 - Deployment: backend and frontend Dockerfiles, Compose stack with MySQL, Redis, two API replicas, worker, frontend and edge Nginx; Nginx config with least-connections upstream and SPA routing; migrate/seed/backup/healthcheck scripts; monitoring guidance; `.env.example` for every layer.
 - Frontend test tooling: Vitest setup + 14 tests; Playwright config + 7 smoke tests that boot their own API and SPA.
 - Fixed during this phase: `worker.js` imported config from the wrong relative paths and could not start; provider KYC documents were stored in the publicly served uploads tree (now private with authenticated streaming).
 - Hardening: production seeding now refuses to create demo accounts unless `SEED_DEMO_PASSWORD` is explicitly set; development and tests keep the documented default.
-- Verification: Vitest 14/14, Playwright 7/7, production build succeeds, coverage gate exits 0 (83.49% lines / 83.39% functions); compose YAML parsed and anchors verified, but no Docker/MySQL/Redis/Nginx runtime was available.
+- Verification: Vitest 14/14, Playwright 7/7, production build succeeds, coverage gate exits 0 (83.68% lines / 83.78% functions); compose YAML parsed and anchors verified, but no Docker/MySQL/Redis/Nginx runtime was available.
 
 ## Phase 9 — External-environment verification
 
@@ -99,10 +100,11 @@ Requires infrastructure not present here:
 - Redis + BullMQ: job execution, retries, worker restarts, Redis outage fallback.
 - Docker Compose + Nginx: build images, start the stack, verify load balancing and SPA routing.
 - SSLCommerz sandbox: success, failure, cancel and duplicate IPN callbacks.
+- bKash Tokenized Checkout sandbox: token grant, create, execute, status query, browser return and duplicate callbacks.
 - SMTP/API email provider: verification, reset and notification delivery.
 - Load test against two API replicas.
 
-Until these run, MySQL/Redis/Docker/Nginx/SSLCommerz/email remain **implemented but unverified**.
+Until these run, MySQL/Redis/Docker/Nginx/SSLCommerz/bKash/email remain **implemented but unverified**.
 
 ## Phase 10 — SEO and link previews
 

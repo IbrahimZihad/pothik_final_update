@@ -5,6 +5,7 @@ const { request, app, login, auth } = require('./helpers/session');
 const { models } = require('../src/models');
 const { today, addDays } = require('../src/shared/utils/dates');
 const { DemoGateway } = require('../src/infrastructure/payments/demo.gateway');
+const { getGateway } = require('../src/infrastructure/payments');
 
 jest.setTimeout(60000);
 
@@ -137,8 +138,69 @@ describe('payments, commissions, payouts and refunds', () => {
     expect(afterPartial.body.data.status).toBe('AWAITING_PAYMENT');
   });
 
-  it('collects the remaining balance and confirms the booking', async () => {
-    const current = await request(app).get(`/api/v1/bookings/${booking.reference}`).set(auth(customer.accessToken));
+  it('advertises the configured payment gateways', async () => {
+    const response = await request(app).get('/api/v1/payments/gateways');
+    expect(response.status).toBe(200);
+    expect(response.body.data.default).toBe('demo');
+    const names = response.body.data.items.map((row) => row.name);
+    expect(names).toEqual(expect.arrayContaining(['demo', 'sslcommerz', 'bkash']));
+    expect(response.body.data.items.find((row) => row.name === 'bkash').configured).toBe(false);
+  });
+
+  it('settles a bKash session through the browser return and re-verification', async () => {
+    const bkash = getGateway('bkash');
+    const configured = jest.spyOn(bkash, 'assertConfigured').mockImplementation(() => {});
+    const create = jest.spyOn(bkash, 'createSession').mockResolvedValue({
+      gatewayUrl: 'https://sandbox.bka.sh/pay/BKSHTRX001',
+      providerTxnId: 'BKSHTRX001',
+      raw: { paymentID: 'BKSHTRX001' },
+    });
+    const execute = jest.spyOn(bkash, 'execute').mockImplementation(async (paymentID) => ({
+      paymentID,
+      transactionStatus: 'Completed',
+      amount: '1.00',
+      merchantInvoiceNumber: booking.reference,
+      trxID: 'WALLETTRX1',
+    }));
+
+    try {
+      const initiated = await request(app)
+        .post('/api/v1/payments')
+        .set(auth(customer.accessToken))
+        .send({ bookingReference: booking.reference, amount: '1.00', method: 'bkash', gateway: 'bkash', idempotencyKey: 'jest-bkash-1' });
+
+      expect(initiated.status).toBe(201);
+      expect(initiated.body.data.payment.provider).toBe('bkash');
+      expect(initiated.body.data.payment.status).toBe('PENDING');
+      expect(initiated.body.data.payment.providerTxnId).toBe('BKSHTRX001');
+      expect(initiated.body.data.gatewayUrl).toBe('https://sandbox.bka.sh/pay/BKSHTRX001');
+      expect(create).toHaveBeenCalledTimes(1);
+
+      const returned = await request(app)
+        .get('/api/v1/payments/callback/bkash')
+        .query({ paymentID: 'BKSHTRX001', status: 'success' });
+
+      expect(returned.status).toBe(303);
+      expect(returned.headers.location).toContain(`/account/bookings/${booking.reference}`);
+      expect(returned.headers.location).toContain('payment=success');
+      expect(execute).toHaveBeenCalledWith('BKSHTRX001');
+
+      const detail = await request(app).get(`/api/v1/payments/${initiated.body.data.payment.id}`).set(auth(customer.accessToken));
+      expect(detail.body.data.status).toBe('SUCCEEDED');
+      expect(detail.body.data.providerTxnId).toBe('BKSHTRX001');
+
+      const replay = await request(app)
+        .get('/api/v1/payments/callback/bkash')
+        .query({ paymentID: 'BKSHTRX001', status: 'success' });
+      expect(replay.status).toBe(303);
+    } finally {
+      configured.mockRestore();
+      create.mockRestore();
+      execute.mockRestore();
+    }
+  });
+
+  it('collects the remaining balance and confirms the booking', async () => {    const current = await request(app).get(`/api/v1/bookings/${booking.reference}`).set(auth(customer.accessToken));
 
     const remainder = await request(app)
       .post('/api/v1/payments')

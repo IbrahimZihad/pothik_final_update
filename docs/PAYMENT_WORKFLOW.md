@@ -4,14 +4,21 @@ All amounts are BDT and pass through `decimal.js`. The server never trusts a cli
 
 ## 1. Gateway abstraction
 
-`infrastructure/payments/index.js` exposes `getGateway(name)` with two implementations:
+`infrastructure/payments/index.js` exposes `getGateway(name)` with three implementations:
 
 | Gateway | Use | Verification |
 | --- | --- | --- |
 | `demo` | Local development and demos (default). Forbidden in production. | HMAC-SHA256 over `paymentId:amount:bookingReference:result`, constant-time comparison |
 | `sslcommerz` | Bangladesh card/MFS acquiring | Redirect session + server-to-server validation API call; store credentials come from env |
+| `bkash` | bKash Tokenized Checkout (PGW v1.2.0-beta) | Server-side `execute` call against the bKash API, falling back to a status query; only `transactionStatus === 'Completed'` settles and the returned amount must match |
 
-Adding a gateway means implementing `createSession()` and `verifyCallback()`; the service layer never changes.
+Adding a gateway means implementing `createSession()` and `verifyCallback()`; the service layer never changes. Each adapter also exposes `isConfigured()`, which `GET /payments/gateways` reports so the checkout UI only offers gateways that have credentials.
+
+bKash specifics:
+
+- `createSession()` grants a cached `id_token`, then calls `/tokenized/checkout/create` with `merchantInvoiceNumber = payment.id`. The returned `paymentID` is stored as `provider_txn_id`, so repeated callbacks resolve to the same payment; the wallet `trxID` stays inside the gateway payload.
+- bKash returns the customer to the browser with a GET request carrying `paymentID` and a `status` hint. The hint is never trusted: `verifyCallback()` executes the payment (or queries it if execute reports it is already done) and only reports success when bKash confirms `Completed`. The route answers GET callbacks with a 303 redirect to the booking page (`?payment=success|failed`) instead of raw JSON.
+- Credentials are `BKASH_APP_KEY`, `BKASH_APP_SECRET`, `BKASH_USERNAME`, `BKASH_PASSWORD`, with optional `BKASH_SANDBOX` and `BKASH_BASE_URL`. If any credential is missing, initiating a bKash payment fails with `GATEWAY_NOT_CONFIGURED` and the gateway is reported as not configured.
 
 ## 2. Payment lifecycle
 
@@ -22,7 +29,7 @@ sequenceDiagram
   participant G as Gateway
   participant DB as MySQL
 
-  C->>API: POST /payments {bookingReference, method, idempotencyKey}
+  C->>API: POST /payments {bookingReference, method, gateway, idempotencyKey}
   API->>DB: load booking, assert owner and payable status
   API->>DB: find payment by idempotency key
   alt key already used with same amount/booking
@@ -54,7 +61,7 @@ sequenceDiagram
 Key guarantees:
 
 - **Idempotency** — `payments.idempotency_key` is unique. A retry returns the original payment; concurrent inserts are caught by the unique constraint and resolved to the same row.
-- **Backend verification** — callbacks are never trusted; the demo gateway checks an HMAC, SSLCommerz is validated against its validation API.
+- **Backend verification** — callbacks are never trusted; the demo gateway checks an HMAC, SSLCommerz is validated against its validation API, and bKash is confirmed through its execute/status API.
 - **Amount integrity** — callback amount must equal the initiated amount; a callback for a cancelled booking is recorded and the money queues as a refund rather than confirming anything.
 - **Double settlement safety** — settlement runs in a transaction with `FOR UPDATE`; an already-paid payment returns `alreadySettled` and does not double-credit the booking.
 - **Overpayment** — the excess is applied to the booking only up to the due amount; the remainder becomes a refund request automatically.
@@ -113,7 +120,9 @@ Verified demo walkthrough (2026-10-30): a completed hotel stay produced ৳11,00
 
 ## 6. Operational rules
 
-- `PAYMENT_GATEWAY=demo` is rejected when `NODE_ENV=production`.
-- Store callback secrets and SSLCommerz credentials only in environment variables.
+- `PAYMENT_GATEWAY=demo` is rejected when `NODE_ENV=production`. Allowed values are `demo`, `sslcommerz` and `bkash`.
+- Store callback secrets and gateway credentials only in environment variables. bKash uses `BKASH_APP_KEY`, `BKASH_APP_SECRET`, `BKASH_USERNAME`, `BKASH_PASSWORD` (`BKASH_SANDBOX`, `BKASH_BASE_URL` optional).
 - Failed gateway sessions mark the payment `FAILED` with a truncated reason; the booking remains payable and the customer can retry with a new idempotency key.
 - Payouts are manual on purpose: an admin records the external transfer reference after moving money outside the system.
+- Refunds are admin-driven for every gateway; no automatic bKash or SSLCommerz refund API call is made.
+- Verification status: the bKash adapter is covered by unit tests with a mocked bKash API and by an integration test that exercises the GET callback and settlement path. It has **not** been run against the bKash sandbox — no sandbox credentials exist in this environment.

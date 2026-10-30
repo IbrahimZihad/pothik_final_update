@@ -20,11 +20,14 @@ const initiateBody = z.object({
     .pipe(z.enum(['card', 'bkash', 'nagad', 'rocket', 'bank', 'sslcommerz']))
     .optional()
     .default('card'),
-  gateway: z.enum(['demo', 'sslcommerz']).optional(),
+  gateway: z.enum(['demo', 'sslcommerz', 'bkash']).optional(),
   idempotencyKey: z.string().trim().min(8).max(120),
 });
 
-const callbackParams = z.object({ gateway: z.enum(['demo', 'sslcommerz']), result: z.enum(['success', 'fail', 'cancel']).optional() });
+const callbackParams = z.object({
+  gateway: z.enum(['demo', 'sslcommerz', 'bkash']),
+  result: z.enum(['success', 'fail', 'cancel']).optional(),
+});
 const callbackBody = z.object({}).passthrough();
 
 const refundBody = z.object({
